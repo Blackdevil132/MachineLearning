@@ -21,7 +21,7 @@ min_epsilon = 0.01  # Minimum exploration probability
 
 
 class QRL:
-    def __init__(self, total_episodes, learning_rate, discount_rate, decay_rate, space=(4, 16), rewards=(0, 10)):
+    def __init__(self, total_episodes, learning_rate, discount_rate, decay_rate):
         self.total_episodes = total_episodes
         self.learning_rate = learning_rate
         self.discount_rate = discount_rate
@@ -34,8 +34,9 @@ class QRL:
         #self.observation_space = space[1]
 
         self.qtable = {}
-        self.rewards = rewards
         self.environment = Game.Game(map_name="8x8", is_slippery=False)
+
+        print("Initialized QRL with Parameters: %i, %i, %i, %i" % (total_episodes, learning_rate, discount_rate, decay_rate))
 
     def statusBar(self, iteration):
         bar_len = 60

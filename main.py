@@ -1,9 +1,14 @@
 import QRL
 import numpy as np
 from tools import timeit
+import sys
 
-
-qrl = QRL.QRL(100000, 0.8, 0.95, 0.001)
+if len(sys.argv) < 5:
+    #print("Usage: " + sys.argv[0] + " total_runs learning_rate discount_rate decay_rate")
+    #exit(0)
+    qrl = QRL.QRL(1000, 0.8, 0.95, 0.001)
+else:
+    qrl = QRL.QRL(int(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]))
 
 timeit(qrl.run, [])
 qrl.loadFromFile()
