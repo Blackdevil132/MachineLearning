@@ -102,7 +102,7 @@ class QRL:
         for episode in range(self.total_episodes):
             # display progress bar
             if episode % (self.total_episodes/100) == 0:
-                self.statusBar(episode)
+                pass #self.statusBar(episode)
 
             # Reset the environment
             state = self.environment.reset()
