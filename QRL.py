@@ -10,7 +10,7 @@ import pickle
 PATH = "qtables/"
 # total_episodes = 500000        # Total episodes
 # learning_rate = 0.8           # Learning rate
-max_steps = 12  # Max steps per episode
+max_steps = 20  # Max steps per episode
 # gamma = 0.95                  # Discounting rate
 
 # Exploration parameters
@@ -33,12 +33,12 @@ class QRL:
         self.decay_rate = decay_rate
 
         self.qtable = {}
-        self.environment = Game.Game(map_name="4x4", is_slippery=False)
+        self.environment = Game.Game(map_name="8x8", is_slippery=False, max_steps=max_steps)
 
         print("Initialized QRL with Parameters: %i, %.2f, %.2f, %.4f" % (total_episodes, learning_rate, discount_rate, decay_rate))
         self.exportPath = None
 
-        self.statistics = [[0, 0, 0, 0] for i in range(16)]
+        self.statistics = {bytes((i, j)): [0, 0, 0, 0] for i in range(self.environment.observation_space.n//max_steps) for j in range(max_steps)}
         self.expexpratio = [0, 0]
 
     def statusBar(self, iteration):
@@ -53,12 +53,14 @@ class QRL:
         date = datetime.datetime.today().strftime("%y%m%d_%H")
         path = PATH + date
         self.exportPath = path
+        print("Storing Q-Table in %s.pkl... " % self.exportPath)
         with open(path + '.pkl', 'wb') as f:
             pickle.dump(self.qtable, f, pickle.HIGHEST_PROTOCOL)
 
     def loadFromFile(self, path=None):
         if path is None:
             path = self.exportPath
+        print("Loading Q-Table from %s.pkl" % path)
         with open(path + '.pkl', 'rb') as f:
             self.qtable = pickle.load(f)
 
@@ -86,18 +88,6 @@ class QRL:
 
     def updateEpsilon(self, episode):
         self.epsilon = self.min_epsilon + (self.max_epsilon - self.min_epsilon) * np.exp(-self.decay_rate * episode)
-
-    def getMaxFutureReward(self, next_state):
-        possible_future_rewards = [0]
-        # check all possible next states and get max rewards for all possible enemy actions
-        for a in self.environment.action_space:
-            try:
-                future_reward = self.qtable[next_state][a]
-            except KeyError:
-                future_reward = 0
-            possible_future_rewards.append(future_reward)
-
-        return np.max(possible_future_rewards)
 
     def learnFromSteps(self, list_of_steps):
         # iterate through all steps taken by the agent from last to first and learn

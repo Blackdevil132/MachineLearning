@@ -74,24 +74,25 @@ def generate_random_map(size=8, p=0.8):
 class Game(discrete.DiscreteEnv):
     metadata = {'render.modes': ['human', 'ansi']}
 
-    def __init__(self, desc=None, map_name="4x4", is_slippery=False):
+    def __init__(self, desc=None, map_name="4x4", is_slippery=False, max_steps=12):
         if desc is None and map_name is None:
-            desc = generate_random_map()
+            desc = generate_random_map(4, 0.5)
         elif desc is None:
             desc = MAPS[map_name]
         self.desc = desc = np.asarray(desc, dtype='c')
         self.nrow, self.ncol = nrow, ncol = desc.shape
-        self.reward_range = {b'F': 0, b'H': -10, b'G': 100, b'S': -10, b'T': 50}
+        self.reward_range = {b'F': 0, b'H': -10, b'G': 100, b'S': -10, b'T': 5}
+        self.max_steps = max_steps
 
-        self.desc[0][2] = b'T'
+        self.desc[1][3] = b'T'
 
         nA = 4
-        nS = self.nrow * self.ncol
+        nS = self.nrow * self.ncol * self.max_steps
 
         isd = np.array(desc == b'S').astype('float64').ravel()
         isd /= isd.sum()
 
-        P = {s: {a: [] for a in range(nA)} for s in range(nS)}
+        P = {bytes((s, i)): {a: [] for a in range(nA)} for s in range(self.ncol*self.nrow) for i in range(self.max_steps)}
 
         def to_s(row, col):
             return row * ncol + col
@@ -109,35 +110,36 @@ class Game(discrete.DiscreteEnv):
 
         for row in range(nrow):
             for col in range(ncol):
-                s = to_s(row, col)
-                for a in range(4):
-                    li = P[s][a]
-                    letter = desc[row, col]
-                    if letter in b'GHT':
-                        li.append((1.0, s, self.reward_range[letter], True))
-                    else:
-                        if is_slippery:
-                            for b in [(a - 1) % 4, a, (a + 1) % 4]:
-                                newrow, newcol = inc(row, col, b)
-                                newstate = to_s(newrow, newcol)
-                                newletter = desc[newrow, newcol]
-                                done = bytes(newletter) in b'GHT'
-                                rew = self.reward_range[newletter]
-                                li.append((1.0 / 3.0, newstate, rew, done))
+                for step in range(max_steps):
+                    s = bytes((to_s(row, col), step))
+                    for a in range(4):
+                        li = P[s][a]
+                        letter = desc[row, col]
+                        if letter in b'GH':
+                            li.append((1.0, s, self.reward_range[letter], True))
                         else:
-                            newrow, newcol = inc(row, col, a)
-                            newstate = to_s(newrow, newcol)
-                            newletter = desc[newrow, newcol]
-                            done = bytes(newletter) in b'GHT'
-                            rew = self.reward_range[newletter]
-                            li.append((1.0, newstate, rew, done))
+                            if is_slippery:
+                                for b in [(a - 1) % 4, a, (a + 1) % 4]:
+                                    newrow, newcol = inc(row, col, b)
+                                    newstate = bytes((to_s(newrow, newcol), step+1))
+                                    newletter = desc[newrow, newcol]
+                                    done = bytes(newletter) in b'GH' or step == self.max_steps
+                                    rew = self.reward_range[newletter]
+                                    li.append((1.0 / 3.0, newstate, rew, done))
+                            else:
+                                newrow, newcol = inc(row, col, a)
+                                newstate = bytes((to_s(newrow, newcol), step+1))
+                                newletter = desc[newrow, newcol]
+                                done = bytes(newletter) in b'GH' or step == self.max_steps
+                                rew = self.reward_range[newletter]
+                                li.append((1.0, newstate, rew, done))
 
         super(Game, self).__init__(nS, nA, P, isd)
 
     def render(self, mode='human'):
         outfile = StringIO() if mode == 'ansi' else sys.stdout
 
-        row, col = self.s // self.ncol, self.s % self.ncol
+        row, col = self.s[0] // self.ncol, self.s[0] % self.ncol
         desc = self.desc.tolist()
         desc = [[c.decode('utf-8') for c in line] for line in desc]
         desc[row][col] = utils.colorize(desc[row][col], "red", highlight=True)
@@ -151,5 +153,7 @@ class Game(discrete.DiscreteEnv):
             with closing(outfile):
                 return outfile.getvalue()
 
-    def getCurrentState(self):
+    def reset(self):
+        self.s = bytes((0, 0))
+        self.lastaction = None
         return self.s
