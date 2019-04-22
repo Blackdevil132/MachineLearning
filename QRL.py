@@ -1,14 +1,16 @@
 import sys
 import numpy as np
 import random
+import datetime
 
 import Game
 import pickle
 
 
+PATH = "qtables/"
 # total_episodes = 500000        # Total episodes
 # learning_rate = 0.8           # Learning rate
-max_steps = 99  # Max steps per episode
+max_steps = 12  # Max steps per episode
 # gamma = 0.95                  # Discounting rate
 
 # Exploration parameters
@@ -30,13 +32,14 @@ class QRL:
         self.min_epsilon = 0.05
         self.decay_rate = decay_rate
 
-        #self.action_space = space[0]
-        #self.observation_space = space[1]
-
         self.qtable = {}
-        self.environment = Game.Game(map_name="8x8", is_slippery=False)
+        self.environment = Game.Game(map_name="4x4", is_slippery=False)
 
-        print("Initialized QRL with Parameters: %i, %i, %i, %i" % (total_episodes, learning_rate, discount_rate, decay_rate))
+        print("Initialized QRL with Parameters: %i, %.2f, %.2f, %.4f" % (total_episodes, learning_rate, discount_rate, decay_rate))
+        self.exportPath = None
+
+        self.statistics = [[0, 0, 0, 0] for i in range(16)]
+        self.expexpratio = [0, 0]
 
     def statusBar(self, iteration):
         bar_len = 60
@@ -46,11 +49,16 @@ class QRL:
         sys.stdout.write('\r[%s] %s%%\n' % (bar, percents))
         sys.stdout.flush()
 
-    def exportToFile(self, path="qtable"):
+    def exportToFile(self):
+        date = datetime.datetime.today().strftime("%y%m%d_%H")
+        path = PATH + date
+        self.exportPath = path
         with open(path + '.pkl', 'wb') as f:
             pickle.dump(self.qtable, f, pickle.HIGHEST_PROTOCOL)
 
-    def loadFromFile(self, path="qtable"):
+    def loadFromFile(self, path=None):
+        if path is None:
+            path = self.exportPath
         with open(path + '.pkl', 'rb') as f:
             self.qtable = pickle.load(f)
 
@@ -114,23 +122,27 @@ class QRL:
                 action = self.getNextAction(state)
                 new_state, reward, done, p = self.environment.step(action)
                 steps.append((state, action, new_state, reward, done))
+                self.statistics[state][action] += 1
+
                 state = new_state
 
             # iterate through all steps taken by the agent from last to first and learn
             self.learnFromSteps(steps)
 
             # Reduce epsilon
+            #print(self.epsilon)
             self.updateEpsilon(episode)
 
         self.exportToFile()
 
     def getNextAction(self, state, test=False):
-        exp_exp_tradeoff = random.uniform(0, 1)
-
         if test:
             exp_exp_tradeoff = self.epsilon+1
+        else:
+            exp_exp_tradeoff = random.uniform(0, 1)
 
         if exp_exp_tradeoff > self.epsilon:
+            self.expexpratio[0] +=1
             # exploit
             try:
                 actions = np.where(self.qtable[state][:] == np.max(self.qtable[state][:]))[0]
@@ -139,6 +151,7 @@ class QRL:
             except KeyError:
                 action = self.environment.action_space.sample()
         else:
+            self.expexpratio[1] += 1
             # explore
             action = self.environment.action_space.sample()
 
@@ -150,7 +163,7 @@ class QRL:
         steps = []
         done = False
         state = self.environment.reset()
-        while not done:
+        while not done and max_steps > len(steps):
             if render:
                 self.environment.render("human")
             action = self.getNextAction(state, True)

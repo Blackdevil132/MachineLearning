@@ -81,7 +81,9 @@ class Game(discrete.DiscreteEnv):
             desc = MAPS[map_name]
         self.desc = desc = np.asarray(desc, dtype='c')
         self.nrow, self.ncol = nrow, ncol = desc.shape
-        self.reward_range = {b'F': -1, b'H': -10, b'G': 100, b'S': -10}
+        self.reward_range = {b'F': 0, b'H': -10, b'G': 100, b'S': -10, b'T': 50}
+
+        self.desc[0][2] = b'T'
 
         nA = 4
         nS = self.nrow * self.ncol
@@ -111,7 +113,7 @@ class Game(discrete.DiscreteEnv):
                 for a in range(4):
                     li = P[s][a]
                     letter = desc[row, col]
-                    if letter in b'GH':
+                    if letter in b'GHT':
                         li.append((1.0, s, self.reward_range[letter], True))
                     else:
                         if is_slippery:
@@ -119,14 +121,14 @@ class Game(discrete.DiscreteEnv):
                                 newrow, newcol = inc(row, col, b)
                                 newstate = to_s(newrow, newcol)
                                 newletter = desc[newrow, newcol]
-                                done = bytes(newletter) in b'GH'
+                                done = bytes(newletter) in b'GHT'
                                 rew = self.reward_range[newletter]
                                 li.append((1.0 / 3.0, newstate, rew, done))
                         else:
                             newrow, newcol = inc(row, col, a)
                             newstate = to_s(newrow, newcol)
                             newletter = desc[newrow, newcol]
-                            done = bytes(newletter) in b'GH'
+                            done = bytes(newletter) in b'GHT'
                             rew = self.reward_range[newletter]
                             li.append((1.0, newstate, rew, done))
 
