@@ -7,7 +7,7 @@ IntToAction = ["LEFT", "DOWN", "RIGHT", "UP"]
 
 if len(sys.argv) < 5:
     # initialize standard parameters
-    total_episodes = 200000
+    total_episodes = 100000
     learning_rate = 0.8
     discount_rate = 0.95
     decay_rate = 0.0001
@@ -20,7 +20,7 @@ else:
 
 
 qrl = QRL.QRL(total_episodes, learning_rate, discount_rate, decay_rate)
-exec_time = timeit(qrl.run, [], 1)
+exec_time = timeit(qrl.run, [total_episodes], 1)
 
 # store exec_time in file
 with open("performance.csv", 'a') as file:

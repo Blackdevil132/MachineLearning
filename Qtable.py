@@ -1,6 +1,6 @@
 import numpy as np
 import pickle
-import multiprocessing
+from multiprocessing import Lock
 
 
 class Qtable:

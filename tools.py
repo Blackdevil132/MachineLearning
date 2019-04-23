@@ -1,4 +1,18 @@
-import time, math
+import time, math, platform
+import multiprocessing
+
+
+def print_sysinfo():
+    print('\nPython version  :', platform.python_version())
+    print('compiler        :', platform.python_compiler())
+
+    print('\nsystem     :', platform.system())
+    print('release    :', platform.release())
+    print('machine    :', platform.machine())
+    print('processor  :', platform.processor())
+    print('CPU count  :', multiprocessing.cpu_count())
+    print('interpreter:', platform.architecture()[0])
+    print('\n\n')
 
 
 def product(li):
@@ -175,13 +189,14 @@ def distinct(li):
     return list(dict.fromkeys(li))
 
 
-def timeit(func, args, loops=None):
+def timeit(func, args, loops=None, printResult=True):
     if loops is None:
         start = time.perf_counter()
         ret = func(*args)
         end = time.perf_counter()
 
-        print("Execution Time for %s%s: %.3f ms" % (func.__name__, str(args), (end-start)*1000))
+        if printResult:
+            print("Execution Time for %s%s: %.3f ms" % (func.__name__, str(args), (end-start)*1000))
 
         return ret
 
@@ -190,7 +205,8 @@ def timeit(func, args, loops=None):
         func(*args)
     end = time.perf_counter()
 
-    print("%i Loops, Average Execution Time for %s%s: %.3f ms" % (loops, func.__name__, str(args), 1000*(end-start)/loops))
+    if printResult:
+        print("%i Loops, Average Execution Time for %s%s: %.3f ms" % (loops, func.__name__, str(args), 1000*(end-start)/loops))
     return (end-start)/loops
 
 
