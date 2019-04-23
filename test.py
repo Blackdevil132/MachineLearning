@@ -1,5 +1,3 @@
-import Game
+import Qtable
 
-g = Game.Game()
-for p in g.P.keys():
-    print(p, g.P[p])
+qt = Qtable.Qtable(4, 16, 4)

@@ -3,19 +3,33 @@ import numpy as np
 from tools import timeit
 import sys
 
-if len(sys.argv) < 5:
-    #print("Usage: " + sys.argv[0] + " total_runs learning_rate discount_rate decay_rate")
-    #exit(0)
-    qrl = QRL.QRL(100000, 0.8, 0.9, 0.00001)
-else:
-    qrl = QRL.QRL(int(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]))
+IntToAction = ["LEFT", "DOWN", "RIGHT", "UP"]
 
-timeit(qrl.run, [])
-qrl.loadFromFile()
+if len(sys.argv) < 5:
+    # initialize standard parameters
+    total_episodes = 200000
+    learning_rate = 0.8
+    discount_rate = 0.95
+    decay_rate = 0.0001
+else:
+    # initialize with given parameter-values
+    total_episodes = int(sys.argv[1])
+    learning_rate = float(sys.argv[2])
+    discount_rate = float(sys.argv[3])
+    decay_rate = float(sys.argv[4])
+
+
+qrl = QRL.QRL(total_episodes, learning_rate, discount_rate, decay_rate)
+exec_time = timeit(qrl.run, [], 1)
+
+# store exec_time in file
+with open("performance.csv", 'a') as file:
+    s = "%i,%.2f,%.2f,%.5f,%f;\n" % (total_episodes, learning_rate, discount_rate, decay_rate, exec_time)
+    file.write(s)
 
 print("=== Q-Table ===============================")
-for elem in sorted(qrl.qtable.keys()):
-    print(elem[0], elem[1], qrl.qtable[elem])
+qrl.loadFromFile()
+qrl.qtable.show()
 
 print("====== MAP Layout ==================\n")
 qrl.environment.reset()
@@ -30,7 +44,8 @@ for i in range(100):
 
 print("===== Optimal Path =====================")
 for i in range(len(steps)):
-    print(i, steps[i])
+    step = steps[i]
+    print(i, "Moving from %i %s to %i.\t Reward: %i." % (step[0][0], IntToAction[step[1]], step[2][0], step[3]))
 
 print("\nAverage Reward over 100 Games: %.2f" % (total_reward/100.0))
 print("Exploitation-Exploration Ratio: %i:%i\n" % (qrl.expexpratio[0], qrl.expexpratio[1]))

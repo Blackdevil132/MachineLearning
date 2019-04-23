@@ -3,8 +3,8 @@ import numpy as np
 import random
 import datetime
 
-import Game
-import pickle
+from Game import Game
+from Qtable import Qtable
 
 
 PATH = "qtables/"
@@ -16,7 +16,7 @@ max_steps = 20  # Max steps per episode
 # Exploration parameters
 epsilon = 1.0  # Exploration rate
 max_epsilon = 1.0  # Exploration probability at start
-min_epsilon = 0.01  # Minimum exploration probability
+min_epsilon = 0.1  # Minimum exploration probability
 
 
 # decay_rate = 0.004             # Exponential decay rate for exploration prob
@@ -32,8 +32,8 @@ class QRL:
         self.min_epsilon = 0.05
         self.decay_rate = decay_rate
 
-        self.qtable = {}
-        self.environment = Game.Game(map_name="8x8", is_slippery=False, max_steps=max_steps)
+        self.qtable = Qtable(4, 64, max_steps+1)
+        self.environment = Game(map_name="8x8", is_slippery=False, max_steps=max_steps)
 
         print("Initialized QRL with Parameters: %i, %.2f, %.2f, %.4f" % (total_episodes, learning_rate, discount_rate, decay_rate))
         self.exportPath = None
@@ -54,37 +54,30 @@ class QRL:
         path = PATH + date
         self.exportPath = path
         print("Storing Q-Table in %s.pkl... " % self.exportPath)
-        with open(path + '.pkl', 'wb') as f:
-            pickle.dump(self.qtable, f, pickle.HIGHEST_PROTOCOL)
+        self.qtable.toFile(path)
 
     def loadFromFile(self, path=None):
         if path is None:
             path = self.exportPath
         print("Loading Q-Table from %s.pkl" % path)
-        with open(path + '.pkl', 'rb') as f:
-            self.qtable = pickle.load(f)
+        self.qtable.fromFile(path)
 
     def updateQ(self, state, action, new_state, reward, done):
+        #if new_state not in self.qtable:
+        #    self.qtable[new_state] = np.zeros(self.environment.action_space.n)
 
-        if new_state not in self.qtable:
-            self.qtable[new_state] = np.zeros(self.environment.action_space.n)
-
-        #print("Updating Q-Value for %i, %i" % (state, action))
         # if state is unknown, add empty entry to qtable
-        if state not in self.qtable:
-            #print("Adding new QTable Entry..")
-            self.qtable[state] = np.zeros(self.environment.action_space.n)
+        #if state not in self.qtable:
+        #    self.qtable[state] = np.zeros(self.environment.action_space.n)
 
         if done:
-            self.qtable[state][action] = reward
+            self.qtable.update(state, action, reward)
 
-        #print("Old QValue: %.2f" % self.qtable[state][action])
         # Update Q(s,a):= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
         # qtable[new_state,:] : all the actions we can take from new state
-        self.qtable[state][action] = self.qtable[state][action] + self.learning_rate * (
-                reward + self.discount_rate * np.max(self.qtable[new_state][:]) - self.qtable[state][action])
-
-        #print("New QValue: %.2f" % self.qtable[state][action])
+        oldValue = self.qtable.get(state, action)
+        newValue = oldValue + self.learning_rate * (reward + self.discount_rate * np.max(self.qtable.get(new_state)) - oldValue)
+        self.qtable.update(state, action, newValue)
 
     def updateEpsilon(self, episode):
         self.epsilon = self.min_epsilon + (self.max_epsilon - self.min_epsilon) * np.exp(-self.decay_rate * episode)
@@ -120,7 +113,6 @@ class QRL:
             self.learnFromSteps(steps)
 
             # Reduce epsilon
-            #print(self.epsilon)
             self.updateEpsilon(episode)
 
         self.exportToFile()
@@ -132,14 +124,18 @@ class QRL:
             exp_exp_tradeoff = random.uniform(0, 1)
 
         if exp_exp_tradeoff > self.epsilon:
-            self.expexpratio[0] +=1
+            self.expexpratio[0] += 1
             # exploit
-            try:
-                actions = np.where(self.qtable[state][:] == np.max(self.qtable[state][:]))[0]
+            if np.max(self.qtable.get(state)) == 0:
+                actions = []
+                for step in range(max_steps):
+                    actions.append(np.argmax(self.qtable.get(bytes((state[0], step)))))
+                unique, counts = np.unique(actions, return_counts=True)
+
+                action = np.argmax(counts)
+            else:
+                actions = np.where(self.qtable.get(state) == np.max(self.qtable.get(state)))[0]
                 action = random.choice(actions)
-            # take random action, if qtable has no values yet
-            except KeyError:
-                action = self.environment.action_space.sample()
         else:
             self.expexpratio[1] += 1
             # explore

@@ -81,10 +81,10 @@ class Game(discrete.DiscreteEnv):
             desc = MAPS[map_name]
         self.desc = desc = np.asarray(desc, dtype='c')
         self.nrow, self.ncol = nrow, ncol = desc.shape
-        self.reward_range = {b'F': 0, b'H': -10, b'G': 100, b'S': -10, b'T': 5}
+        self.reward_range = {b'F': -1, b'H': -10, b'G': 1000, b'S': -10, b'T': 5}
         self.max_steps = max_steps
 
-        self.desc[1][3] = b'T'
+        self.desc[3][6] = b'T'
 
         nA = 4
         nS = self.nrow * self.ncol * self.max_steps
@@ -131,7 +131,10 @@ class Game(discrete.DiscreteEnv):
                                 newstate = bytes((to_s(newrow, newcol), step+1))
                                 newletter = desc[newrow, newcol]
                                 done = bytes(newletter) in b'GH' or step == self.max_steps
-                                rew = self.reward_range[newletter]
+                                if newstate[0] == s[0]:
+                                    rew = -100
+                                else:
+                                    rew = self.reward_range[newletter]
                                 li.append((1.0, newstate, rew, done))
 
         super(Game, self).__init__(nS, nA, P, isd)
