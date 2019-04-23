@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import multiprocessing
 
 
 class Qtable:
