@@ -39,7 +39,7 @@ class GameEnemy(discrete.DiscreteEnv):
             desc = MAPS[map_name]
         self.desc = desc = np.asarray(desc, dtype='c')
         self.nrow, self.ncol = nrow, ncol = desc.shape
-        self.reward_range = {b'F': 0, b'H': 0, b'G': 1, b'S': 0, b'K': 1}
+        self.reward_range = {b'F': 0, b'H': -1, b'G': 1, b'S': 0, b'K': 1}
 
         nA = 4
         nS = (self.nrow * self.ncol)**2

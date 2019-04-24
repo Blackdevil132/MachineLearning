@@ -4,6 +4,7 @@ import random
 import datetime
 
 from Game import Game
+from tools import statusBar
 from GameEnemy import GameEnemy
 from QtableEnemy import QtableEnemy
 
@@ -75,8 +76,8 @@ class QRL:
         # execute Game and learn
         for episode in range(total_episodes):
             # display progress bar
-            #if episode % (total_episodes/100) == 0:
-            # self.statusBar(episode, total_episodes)
+            if episode % (total_episodes/100) == 0:
+                statusBar(episode, total_episodes)
 
             # Reset the environment
             state = self.environment.reset()
