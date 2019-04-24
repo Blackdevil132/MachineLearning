@@ -4,22 +4,12 @@ import random
 import datetime
 
 from Game import Game
-from Qtable import Qtable
+from GameEnemy import GameEnemy
+from QtableTime import QtableTime
 
 
 PATH = "qtables/"
-# total_episodes = 500000        # Total episodes
-# learning_rate = 0.8           # Learning rate
-max_steps = 20  # Max steps per episode
-# gamma = 0.95                  # Discounting rate
-
-# Exploration parameters
-epsilon = 1.0  # Exploration rate
-max_epsilon = 1.0  # Exploration probability at start
-min_epsilon = 0.1  # Minimum exploration probability
-
-
-# decay_rate = 0.004             # Exponential decay rate for exploration prob
+max_steps = 100  # Max steps per episode
 
 
 class QRL:
@@ -32,13 +22,12 @@ class QRL:
         self.min_epsilon = 0.05
         self.decay_rate = decay_rate
 
-        self.qtable = Qtable(4, 64, max_steps+1)
-        self.environment = Game(map_name="8x8", is_slippery=False, max_steps=max_steps)
+        self.qtable = QtableTime(4, 16, 16)
+        self.environment = GameEnemy(map_name="4x4", is_slippery=False)
 
         print("Initialized QRL with Parameters: %i, %.2f, %.2f, %.4f" % (total_episodes, learning_rate, discount_rate, decay_rate))
         self.exportPath = None
 
-        self.statistics = {bytes((i, j)): [0, 0, 0, 0] for i in range(self.environment.observation_space.n//max_steps) for j in range(max_steps)}
         self.expexpratio = [0, 0]
 
     def statusBar(self, iteration):
@@ -63,13 +52,6 @@ class QRL:
         self.qtable.fromFile(path)
 
     def updateQ(self, state, action, new_state, reward, done):
-        #if new_state not in self.qtable:
-        #    self.qtable[new_state] = np.zeros(self.environment.action_space.n)
-
-        # if state is unknown, add empty entry to qtable
-        #if state not in self.qtable:
-        #    self.qtable[state] = np.zeros(self.environment.action_space.n)
-
         if done:
             self.qtable.update(state, action, reward)
 
@@ -105,7 +87,6 @@ class QRL:
                 action = self.getNextAction(state)
                 new_state, reward, done, p = self.environment.step(action)
                 steps.append((state, action, new_state, reward, done))
-                self.statistics[state][action] += 1
 
                 state = new_state
 
@@ -126,16 +107,16 @@ class QRL:
         if exp_exp_tradeoff > self.epsilon:
             self.expexpratio[0] += 1
             # exploit
-            if np.max(self.qtable.get(state)) == 0:
-                actions = []
-                for step in range(max_steps):
-                    actions.append(np.argmax(self.qtable.get(bytes((state[0], step)))))
-                unique, counts = np.unique(actions, return_counts=True)
+            #if np.max(self.qtable.get(state)) == 0:
+            #    actions = []
+            #    for step in range(max_steps):
+            #        actions.append(np.argmax(self.qtable.get(bytes((state[0], step)))))
+            #    unique, counts = np.unique(actions, return_counts=True)
 
-                action = np.argmax(counts)
-            else:
-                actions = np.where(self.qtable.get(state) == np.max(self.qtable.get(state)))[0]
-                action = random.choice(actions)
+            #    action = np.argmax(counts)
+            #else:
+            actions = np.where(self.qtable.get(state) == np.max(self.qtable.get(state)))[0]
+            action = random.choice(actions)
         else:
             self.expexpratio[1] += 1
             # explore

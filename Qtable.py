@@ -1,38 +1,51 @@
-import numpy as np
 import pickle
-import multiprocessing
 
 
 class Qtable:
-    def __init__(self, action_space, observation_space, max_steps):
-        self.action_space = action_space
-        self.observation_space = observation_space
-        self.max_steps = max_steps
-
-        self.table = [[np.zeros(action_space) for j in range(max_steps)] for i in range(observation_space)]
-
-    def get(self, state, action=None):
-        if action is None:
-            return self.table[state[0]][state[1]][:]
-
-        return self.table[state[0]][state[1]][action]
-
-    def update(self, state, action, newValue):
-        self.table[state[0]][state[1]][action] = newValue
-
-    def show(self):
-        for state in range(self.observation_space):
-            print("%i " % state, end='')
-            for step in range(self.max_steps):
-                print("\t%i: " % step, end='')
-                for action in self.table[state][step]:
-                    print("\t%.3f, " % action, end='')
-                print()
+    def __init__(self):
+        self.table = {}
 
     def fromFile(self, path):
+        """
+        Loads QTable from given Path
+        :param path: path to load from
+        """
         with open(path + '.pkl', 'rb') as f:
             self.table = pickle.load(f)
 
     def toFile(self, path):
+        """
+        Saves Qtable in .pkl file
+        :param path: Path to save file at
+        """
         with open(path + '.pkl', 'wb') as f:
             pickle.dump(self.table, f, pickle.HIGHEST_PROTOCOL)
+
+    def get(self, state, action=None):
+        """
+        :param state: state of environment
+        :param action: one possible action for given state
+        :return: QTable Value for state and action
+        """
+        if action is None:
+            return self.table[state][:]
+
+        return self.table[state][action]
+
+    def update(self, state, action, newValue):
+        """
+        :param state: state of environment
+        :param action: possible action for given state
+        :param newValue: Value to assign
+        """
+        self.table[state][action] = newValue
+
+    def show(self):
+        """
+        pretty prints the qtable
+        """
+        for state in self.table.keys():
+            print("%i " % state, end='')
+            for action in self.table[state]:
+                print("\t%.3f, " % action, end='')
+            print()

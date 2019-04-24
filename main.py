@@ -7,7 +7,7 @@ IntToAction = ["LEFT", "DOWN", "RIGHT", "UP"]
 
 if len(sys.argv) < 5:
     # initialize standard parameters
-    total_episodes = 200000
+    total_episodes = 20000
     learning_rate = 0.8
     discount_rate = 0.95
     decay_rate = 0.0001
