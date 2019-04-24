@@ -39,7 +39,7 @@ class GameEnemy(discrete.DiscreteEnv):
             desc = MAPS[map_name]
         self.desc = desc = np.asarray(desc, dtype='c')
         self.nrow, self.ncol = nrow, ncol = desc.shape
-        self.reward_range = {b'F': 0, b'H': -10, b'G': 1000, b'S': 0}
+        self.reward_range = {b'F': -1, b'H': -10, b'G': 10, b'S': -1}
 
         nA = 4
         nS = (self.nrow * self.ncol)**2
@@ -109,6 +109,6 @@ class GameEnemy(discrete.DiscreteEnv):
                 return outfile.getvalue()
 
     def reset(self):
-        self.s = bytes((0, self.ncol-1))
+        self.s = bytes((0, (self.nrow*self.ncol)-1))
         self.lastaction = None
         return self.s

@@ -7,7 +7,7 @@ IntToAction = ["LEFT", "DOWN", "RIGHT", "UP"]
 
 if len(sys.argv) < 5:
     # initialize standard parameters
-    total_episodes = 20000
+    total_episodes = 1000000
     learning_rate = 0.8
     discount_rate = 0.95
     decay_rate = 0.0001
@@ -45,7 +45,7 @@ for i in range(100):
 print("===== Optimal Path =====================")
 for i in range(len(steps)):
     step = steps[i]
-    print(i, "Moving from %i %s to %i.\t Reward: %i." % (step[0][0], IntToAction[step[1]], step[2][0], step[3]))
+    print(i, "Enemy at %i. Moving from %i %s to %i.\t Reward: %i." % (step[0][1], step[0][0], IntToAction[step[1]], step[2][0], step[3]))
 
 print("\nAverage Reward over 100 Games: %.2f" % (total_reward/100.0))
 print("Exploitation-Exploration Ratio: %i:%i\n" % (qrl.expexpratio[0], qrl.expexpratio[1]))

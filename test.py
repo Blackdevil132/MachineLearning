@@ -1,11 +1,7 @@
-from GameEnemy import GameEnemy
+from QRL import QRL
 
-game = GameEnemy(map_name="4x4")
+qrl = QRL(0,0,0,0)
+qrl.loadFromFile("qtables/saved/190424_11")
+print(qrl.qtable.get(bytes((14, 15))))
 
-game.reset()
-game.render()
-
-done = False
-while not done:
-    s, r, done, info = game.step(int(input("Where to go?")))
-    game.render()
+qrl.test(render=True)

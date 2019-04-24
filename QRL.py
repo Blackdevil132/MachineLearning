@@ -137,5 +137,7 @@ class QRL:
             new_state, reward, done, p = self.environment.step(action)
             steps.append((state, action, new_state, reward))
             state = new_state
+        if render:
+            self.environment.render()
 
         return steps
