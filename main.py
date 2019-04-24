@@ -5,7 +5,7 @@ import sys
 from GameEnemy import GameEnemy
 
 IntToAction = ["LEFT", "DOWN", "RIGHT", "UP"]
-mapname="4x4"
+mapname="8x8"
 
 if len(sys.argv) < 5:
     # initialize standard parameters
