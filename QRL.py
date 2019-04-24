@@ -5,7 +5,7 @@ import datetime
 
 from Game import Game
 from GameEnemy import GameEnemy
-from QtableTime import QtableTime
+from QtableEnemy import QtableEnemy
 
 
 PATH = "qtables/"
@@ -21,7 +21,7 @@ class QRL:
         self.min_epsilon = 0.05
         self.decay_rate = decay_rate
 
-        self.qtable = QtableTime(4, 16, 16)
+        self.qtable = QtableEnemy(4, 16, 16)
         self.environment = GameEnemy(map_name="4x4") if env is None else env
 
         self.exportPath = None

@@ -3,13 +3,15 @@ from Qtable import Qtable
 
 
 # Qtable for 2-dim storing
-class QtableTime(Qtable):
+class QtableEnemy(Qtable):
     def __init__(self, action_space, observation_space_1, observation_space_2):
         Qtable.__init__(self)
         self.action_space = action_space
         self.observation_space = (observation_space_1, observation_space_2)
 
-        self.table = [[np.zeros(action_space) for j in range(observation_space_2)] for i in range(observation_space_1)]
+        self.table = [{j: np.zeros(action_space) for j in range(observation_space_2)} for i in range(observation_space_1)]
+        for i in range(self.observation_space[0]):
+            self.table[i][255] = np.zeros(action_space)
 
     def get(self, state, action=None):
         if action is None:
@@ -23,8 +25,8 @@ class QtableTime(Qtable):
     def show(self):
         for dim1 in range(self.observation_space[0]):
             print("%i " % dim1, end='')
-            for dim2 in range(self.observation_space[1]):
-                print("\t%i: " % dim2, end='')
-                for action in self.table[dim1][dim2]:
+            for key in self.table[dim1].keys():
+                print("\t%i: " % key, end='')
+                for action in self.table[dim1][key]:
                     print("\t%.3f, " % action, end='')
                 print()

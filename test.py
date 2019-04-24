@@ -1,7 +1,12 @@
 from QRL import QRL
+from GameEnemy import GameEnemy
 
-qrl = QRL(0,0,0,0)
-qrl.loadFromFile("qtables/saved/190424_11")
-print(qrl.qtable.get(bytes((6, 7))))
 
-qrl.test(render=True)
+env = GameEnemy()
+
+done = 0
+env.reset()
+while not done:
+    env.render()
+    s, r, done, p = env.step(int(input("What do?")))
+env.render()
