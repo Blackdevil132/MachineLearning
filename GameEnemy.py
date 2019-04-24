@@ -39,7 +39,7 @@ class GameEnemy(discrete.DiscreteEnv):
             desc = MAPS[map_name]
         self.desc = desc = np.asarray(desc, dtype='c')
         self.nrow, self.ncol = nrow, ncol = desc.shape
-        self.reward_range = {b'F': -1, b'H': -10, b'G': 10, b'S': -1}
+        self.reward_range = {b'F': 0, b'H': 0, b'G': 1, b'S': 0}
 
         nA = 4
         nS = (self.nrow * self.ncol)**2
@@ -96,8 +96,8 @@ class GameEnemy(discrete.DiscreteEnv):
         row_e, col_e = self.s[1] // self.ncol, self.s[1] % self.ncol
         desc = self.desc.tolist()
         desc = [[c.decode('utf-8') for c in line] for line in desc]
-        desc[row][col] = utils.colorize(desc[row][col], "red", highlight=True)
-        desc[row_e][col_e] = utils.colorize(desc[row_e][col_e], "blue", highlight=True)
+        desc[row][col] = utils.colorize(desc[row][col], "green", highlight=True)
+        desc[row_e][col_e] = utils.colorize(desc[row_e][col_e], "red", highlight=True)
         if self.lastaction is not None:
             outfile.write("  ({})\n".format(["Left", "Down", "Right", "Up"][self.lastaction]))
         else:

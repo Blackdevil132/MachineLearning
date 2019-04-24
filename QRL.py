@@ -13,8 +13,7 @@ max_steps = 100  # Max steps per episode
 
 
 class QRL:
-    def __init__(self, total_episodes, learning_rate, discount_rate, decay_rate):
-        self.total_episodes = total_episodes
+    def __init__(self, env=None, learning_rate=0.8, discount_rate=0.9, decay_rate=0.0001):
         self.learning_rate = learning_rate
         self.discount_rate = discount_rate
         self.epsilon = 1.0
@@ -23,33 +22,25 @@ class QRL:
         self.decay_rate = decay_rate
 
         self.qtable = QtableTime(4, 16, 16)
-        self.environment = GameEnemy(map_name="4x4", is_slippery=False)
+        self.environment = GameEnemy(map_name="4x4") if env is None else env
 
-        print("Initialized QRL with Parameters: %i, %.2f, %.2f, %.4f" % (total_episodes, learning_rate, discount_rate, decay_rate))
         self.exportPath = None
 
         self.expexpratio = [0, 0]
 
-    def statusBar(self, iteration):
-        bar_len = 60
-        filled_len = int(round(bar_len * iteration / self.total_episodes))
-        percents = 100 * iteration / self.total_episodes
-        bar = '=' * filled_len + '-' * (bar_len - filled_len)
-        sys.stdout.write('\r[%s] %s%%\n' % (bar, percents))
-        sys.stdout.flush()
-
     def exportToFile(self):
-        date = datetime.datetime.today().strftime("%y%m%d_%H")
-        path = PATH + date
-        self.exportPath = path
+        if self.exportPath is None:
+            date = datetime.datetime.today().strftime("%y%m%d_%H")
+            path = PATH + date
+            self.exportPath = path
         print("Storing Q-Table in %s.pkl... " % self.exportPath)
-        self.qtable.toFile(path)
+        self.qtable.toFile(self.exportPath)
 
     def loadFromFile(self, path=None):
         if path is None:
             path = self.exportPath
-        print("Loading Q-Table from %s.pkl" % path)
         self.qtable.fromFile(path)
+        print("Loaded Q-Table from %s.pkl" % path)
 
     def updateQ(self, state, action, new_state, reward, done):
         if done:
@@ -70,12 +61,22 @@ class QRL:
             # update qtable-entry for current state and action
             self.updateQ(*step)
 
-    def run(self):
+    def run(self, total_episodes, path=None):
+        # Try loading file from path and continue learning. If not exists, save newly learned table in path
+        if path is not None:
+            self.exportPath = path
+            try:
+                self.loadFromFile()
+            except FileNotFoundError:
+                pass
+
+        print("Initialized Learning with Parameters: %i, %.2f, %.2f, %.4f..." % (total_episodes, self.learning_rate, self.discount_rate, self.decay_rate))
+
         # execute Game and learn
-        for episode in range(self.total_episodes):
+        for episode in range(total_episodes):
             # display progress bar
-            if episode % (self.total_episodes/100) == 0:
-                pass #self.statusBar(episode)
+            #if episode % (total_episodes/100) == 0:
+            # self.statusBar(episode, total_episodes)
 
             # Reset the environment
             state = self.environment.reset()

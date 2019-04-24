@@ -1,4 +1,13 @@
-import time, math
+import time, math, sys
+
+
+def statusBar(iteration, total_episodes):
+    bar_len = 60
+    filled_len = int(round(bar_len * iteration / total_episodes))
+    percents = 100 * iteration / total_episodes
+    bar = '=' * filled_len + '-' * (bar_len - filled_len)
+    sys.stdout.write('\r[%s] %s%%\n' % (bar, percents))
+    sys.stdout.flush()
 
 
 def product(li):
