@@ -5,6 +5,7 @@ qrl = QRL(GameEnemy(map_name="8x8"))
 qrl.loadFromFile("qtables/190425_11")
 qrl.test_visual()
 
+
 """
 done = 0
 env.reset()

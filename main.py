@@ -4,18 +4,19 @@ from src.tools.tools import timeit
 import sys
 from src.GameEnemy import GameEnemy
 
-IntToAction = ["LEFT", "DOWN", "RIGHT", "UP", "STAYING"]
+IntToAction = ["LEFT", "DOWN", "RIGHT", "UP", "STAYING", "SLAYING"]
 mapname="8x8"
 LEFT = 0
 DOWN = 1
 RIGHT = 2
 UP = 3
 STAY = 4
+SLAY = 5
 
 if len(sys.argv) < 5:
     # initialize standard parameters
-    total_episodes = 100
-    learning_rate = 0.2
+    total_episodes = 200
+    learning_rate = 0.25
     discount_rate = 0.9
     decay_rate = 0.0001
 else:
@@ -50,7 +51,7 @@ for i in range(numTests):
     for step in steps:
         total_rewards[i] += step[3]
 
-    if total_rewards[i] == 200:
+    if total_rewards[i] == 300:
         continue
 
     print("===== Test Game %i =====================" % (i+1))
@@ -61,12 +62,14 @@ for i in range(numTests):
             step_str += " "
         if step[1] == STAY:
             step_str += "STAYING at %i. \t\t\t\t" % step[2][0]
+        elif step[1] == SLAY:
+            step_str += "SLAYING Enemy at %i. \t\t" % step[0][1]
         else:
             step_str += "Moving from %i %s to %i. \t" % (step[0][0], IntToAction[step[1]], step[2][0])
             if len(step_str) <= 27:
                 step_str += "\t\t"
 
-        if step[0][1] == 255:
+        if step[2][1] == 255:
             step_str += "Enemy DEAD. \t\t\t\t"
         elif step[0][1] == step[2][1]:
             step_str += "Enemy STAYING at %i. \t\t" % step[2][1]

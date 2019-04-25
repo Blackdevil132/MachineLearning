@@ -17,7 +17,7 @@ BLACK = (0, 0, 0)
 COLOR_BG = (230, 230, 230)
 PATH = "qtables/"
 MAP = bytes("FFFFFFFFFFFFFFFFFFFHFFFFFFFFFHFFFFFHFFFFFHHFFFHFFHFFHFHFFFFHFFFG", "utf8")
-max_steps = 50  # Max steps per episode
+max_steps = 25  # Max steps per episode
 
 
 class QRL:
@@ -29,7 +29,7 @@ class QRL:
         self.min_epsilon = 0.05
         self.decay_rate = decay_rate
 
-        self.qtable = QtableEnemy(5, 64, 64)
+        self.qtable = QtableEnemy(6, 64, 64)
         self.environment = GameEnemy(map_name="4x4") if env is None else env
 
         self.exportPath = None
@@ -247,7 +247,7 @@ class QRL:
     def test_visual(self):
         # init pygame window
         pg.init()
-        size = width, height = 1288, 1024
+        size = width, height = 1332, 1024
         icon = pg.image.load("images/brain_icon_32.png")
         pg.display.set_icon(icon)
         screen = pg.display.set_mode(size)
@@ -261,11 +261,12 @@ class QRL:
             pg.display.flip()
 
         def getField(state, unit=0):
-            units = [b'', b'K', b'E']
+            units = [b'', b'K', b'E', b'DE']
             translator = {83: b'F', 70: b'F', 71: b'G', 72: b'H'}
             field = translator[MAP[state]] + units[unit]
             return field
 
+        text_last_reward = pgTextPanel((1032, 64), (150, 64), "Last Reward: 0")
         force_exit = False
         while not force_exit:
 
@@ -279,11 +280,12 @@ class QRL:
             court = pgGrid((0, 0), (1024, 1024), (8, 8), fields, borderwidth=10)
             assets.append(court)
 
-            text_steps = pgTextPanel((1032, 0), (256, 64), "Steps: 0")
-            text_reward = pgTextPanel((1032, 64), (256, 64), "Reward: 0")
-            text_decision = pgTextPanel((1032, 128), (256, 32), np.array2string(self.qtable.get(bytes((0, 0))), precision=0))
+            text_steps = pgTextPanel((1032, 0), (300, 64), "Steps Remaining: %i" % max_steps)
+            text_reward = pgTextPanel((1182, 64), (150, 64), "Reward: 0")
+            text_decision = pgTextPanel((1032, 128), (300, 32), np.array2string(self.qtable.get(bytes((0, 63))), precision=0), fontsize=18)
             assets.append(text_steps)
             assets.append(text_reward)
+            assets.append(text_last_reward)
             assets.append(text_decision)
 
             update()
@@ -303,24 +305,30 @@ class QRL:
                         force_exit = True
 
                 action = self.getNextAction(state, True)
-                if action in (0, 1, 2, 3, 4):
+                if action in (0, 1, 2, 3, 4, 5):
                     newstate, reward, done, info = self.environment.step(action)
                     steps.append((state, action, newstate, reward))
 
                     total_reward += reward
 
+                    if action == 5:
+                        print(action, state, newstate)
+                        court.objects[state[1]].set_type(getField(state[1], 3))
+
                     # update assets
                     court.objects[state[0]].set_type(getField(state[0]))
                     court.objects[newstate[0]].set_type(getField(newstate[0], 1))
-                    if newstate[1] != 255:
+                    if state[1] != 255 and newstate[1] != 255:
                         court.objects[state[1]].set_type(getField(state[1]))
                         court.objects[newstate[1]].set_type(getField(newstate[1], 2))
 
-                    text_steps.set_text("Steps: %i" % len(steps))
+                    text_steps.set_text("Steps Remaining: %i" % (max_steps-len(steps)))
                     text_reward.set_text("Reward: %i" % total_reward)
                     dec_str = np.array2string(self.qtable.get(state), precision=0)
-                    assets.append(pgTextPanel((1032, 128 + counter*32), (256, 32), dec_str))
+                    assets.append(pgTextPanel((1032, 128 + counter*32), (300, 32), dec_str, fontsize=18))
                     update()
 
                     state = newstate
                     counter += 1
+
+            text_last_reward.set_text("Last Reward: %i" % total_reward)

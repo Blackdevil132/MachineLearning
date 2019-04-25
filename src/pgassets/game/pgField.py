@@ -3,9 +3,10 @@ import pygame
 from src.pgassets.common.pgImagePanel import pgImagePanel
 
 
-types = {b'S': "grass_128.png", b'F': "grass_128.png", b'H': "grass_crackhole_128.png",
-         b'G': "grass_treasure_128.png", b'HE': "grass_crackhole_enemy_128.png", b'FK': "grass_knight_128.png",
-         b'FE': "grass_enemy_128.png", b'GE': "grass_treasure_enemy_128.png", b'GK': "grass_treasure_knight_128.png"}
+types = {b'S': "grass_128.png",
+         b'G': "grass_treasure_128.png", b'GE': "grass_treasure_enemy_128.png", b'GK': "grass_treasure_knight_128.png",
+         b'H': "grass_crackhole_128.png", b'HE': "grass_crackhole_enemy_128.png", b'HK': "grass_crackhole_128.png", b'HDE': "grass_crackhole_enemy_slain_128.png",
+         b'F': "grass_128.png", b'FK': "grass_knight_128.png", b'FE': "grass_enemy_128.png", b'FDE': "grass_enemy_slain_128.png"}
 
 
 class pgField(pgImagePanel):
