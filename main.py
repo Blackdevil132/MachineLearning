@@ -51,27 +51,29 @@ for i in range(numTests):
         total_rewards[i] += step[3]
 
     if total_rewards[i] == 200:
-        pass#continue
+        continue
 
     print("===== Test Game %i =====================" % (i+1))
     for j in range(len(steps)):
         step = steps[j]
-        step_str = ""
+        step_str = "%i " % j
+        if j < 10:
+            step_str += " "
         if step[1] == STAY:
-            step_str += "STAYING at %i. \t\t\t" % step[2][0]
+            step_str += "STAYING at %i. \t\t\t\t" % step[2][0]
         else:
-            step_str += "Moving from %i %s to %i. " % (step[0][0], IntToAction[step[1]], step[2][0])
-            if len(step_str) <= 25:
-                step_str += "\t"
+            step_str += "Moving from %i %s to %i. \t" % (step[0][0], IntToAction[step[1]], step[2][0])
+            if len(step_str) <= 27:
+                step_str += "\t\t"
 
         if step[0][1] == 255:
-            step_str += "\tEnemy DEAD. \t\t"
+            step_str += "Enemy DEAD. \t\t\t\t"
         elif step[0][1] == step[2][1]:
-            step_str += "\tEnemy STAYING at %i. \t\t" % step[2][1]
+            step_str += "Enemy STAYING at %i. \t\t" % step[2][1]
         else:
-            step_str += "\tEnemy moving from %i to %i. " % (step[0][1], step[2][1])
+            step_str += "Enemy moving from %i to %i. " % (step[0][1], step[2][1])
         step_str += "\tReward: %i." % step[3]
-        print(j, step_str)
+        print(step_str)
     print("Total Reward: %i\n" % total_rewards[i])
 
 print("\nMedian Reward: %.2f; Mean Reward: %.2f" % (np.median(total_rewards), np.mean(total_rewards)))

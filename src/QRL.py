@@ -248,7 +248,7 @@ class QRL:
         # init pygame window
         pg.init()
         size = width, height = 1288, 1024
-        icon = pg.image.load("images/circuit_icon_32.png")
+        icon = pg.image.load("images/brain_icon_32.png")
         pg.display.set_icon(icon)
         screen = pg.display.set_mode(size)
         pg.display.set_caption("QRL Game")
@@ -296,7 +296,7 @@ class QRL:
             state = self.environment.reset()
 
             while not done and max_steps > len(steps) and not force_exit:
-                #time.sleep(1)
+                time.sleep(0.8)
                 # handle events
                 for event in pg.event.get():
                     if event.type == pg.QUIT:
