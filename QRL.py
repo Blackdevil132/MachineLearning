@@ -72,12 +72,13 @@ class QRL:
                 pass
 
         print("Initialized Learning with Parameters: %i, %.2f, %.2f, %.4f..." % (total_episodes, self.learning_rate, self.discount_rate, self.decay_rate))
-
+        print("Progress: [", end='')
         # execute Game and learn
         for episode in range(total_episodes):
             # display progress bar
-            if episode % (total_episodes/100) == 0:
-                statusBar(episode, total_episodes)
+            if episode % int(total_episodes/55.0) == 0:
+                #statusBar(episode, total_episodes)
+                print("=", end='')
 
             # Reset the environment
             state = self.environment.reset()
@@ -98,6 +99,7 @@ class QRL:
             # Reduce epsilon
             self.updateEpsilon(episode)
 
+        print("]")
         self.exportToFile()
 
     def getNextAction(self, state, test=False):

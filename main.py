@@ -4,14 +4,14 @@ from tools import timeit
 import sys
 from GameEnemy import GameEnemy
 
-IntToAction = ["LEFT", "DOWN", "RIGHT", "UP"]
+IntToAction = ["LEFT", "DOWN", "RIGHT", "UP", "STAY"]
 mapname="8x8"
 
 if len(sys.argv) < 5:
     # initialize standard parameters
     total_episodes = 200000
     learning_rate = 0.75
-    discount_rate = 0.95
+    discount_rate = 0.9
     decay_rate = 0.0001
 else:
     # initialize with given parameter-values

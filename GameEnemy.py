@@ -10,6 +10,7 @@ LEFT = 0
 DOWN = 1
 RIGHT = 2
 UP = 3
+STAY = 4
 
 MAPS = {
     "4x4": [
@@ -39,7 +40,7 @@ class GameEnemy(discrete.DiscreteEnv):
             desc = MAPS[map_name]
         self.desc = desc = np.asarray(desc, dtype='c')
         self.nrow, self.ncol = nrow, ncol = desc.shape
-        self.reward_range = {b'F': 0, b'H': -1, b'G': 1, b'S': 0, b'K': 1}
+        self.reward_range = {b'F': 0, b'H': 0, b'G': 100, b'S': 0, b'K': 100}
 
         nA = 4
         nS = (self.nrow * self.ncol)**2
@@ -61,21 +62,23 @@ class GameEnemy(discrete.DiscreteEnv):
                 col = min(col + 1, ncol - 1)
             elif a == UP:
                 row = max(row - 1, 0)
+            elif a == STAY:
+                pass
             return (row, col)
 
         def getEnemyPattern(nrow, ncol):
-            pattern = [np.zeros(nA) for i in range(nrow*ncol)]
+            pattern = [np.zeros(nA+1) for i in range(nrow*ncol)]
             for row in range(nrow):
                 for col in range(ncol):
-                    possible_moves = np.zeros(nA)
-                    for a in range(nA):
+                    possible_moves = np.zeros(nA+1)
+                    for a in range(nA+1):
                         newrow, newcol = inc(row, col, a)
-                        if to_s(row, col) == to_s(newrow, newcol):
+                        if a != STAY and to_s(row, col) == to_s(newrow, newcol):
                             pattern[to_s(row, col)][a] = 0
                         else:
                             possible_moves[a] = True
 
-                    for a in range(nA):
+                    for a in range(nA+1):
                         if possible_moves[a]:
                             pattern[to_s(row, col)][a] = 1.0 / possible_moves.sum()
 
@@ -98,8 +101,9 @@ class GameEnemy(discrete.DiscreteEnv):
                                 if new_s == s[1]:
                                     # Agent moved into Enemy
                                     newletter = desc[newrow, newcol]
+                                    rew = self.reward_range[b'K'] + self.reward_range[newletter]
                                     done = bytes(newletter) in b'GH'
-                                    li.append((1.0, bytes((new_s, 255)), self.reward_range[b'K'], done))
+                                    li.append((1.0, bytes((new_s, 255)), rew, done))
                                 else:
                                     for a_e in range(4):
                                         prob_a_e = enemy_pattern[to_s(row_e, col_e)][a_e]
@@ -110,7 +114,7 @@ class GameEnemy(discrete.DiscreteEnv):
                                         done = bytes(newletter) in b'GH' or newstate[0] == newstate[1]
                                         # penalize moving out of bounds
                                         if newstate[0] == s[0]:
-                                            rew = -10
+                                            rew = -100
                                         else:
                                             rew = self.reward_range[newletter]
                                         li.append((prob_a_e, newstate, rew, done))
@@ -138,7 +142,7 @@ class GameEnemy(discrete.DiscreteEnv):
         row_e, col_e = self.s[1] // self.ncol, self.s[1] % self.ncol
         desc = self.desc.tolist()
         desc = [[c.decode('utf-8') for c in line] for line in desc]
-        desc[row][col] = utils.colorize(desc[row][col], "green", highlight=True)
+        desc[row][col] = utils.colorize(desc[row][col], "blue", highlight=True)
         try:
             desc[row_e][col_e] = utils.colorize(desc[row_e][col_e], "red", highlight=True)
         except IndexError:
@@ -154,6 +158,6 @@ class GameEnemy(discrete.DiscreteEnv):
                 return outfile.getvalue()
 
     def reset(self):
-        self.s = bytes((0, (self.nrow*self.ncol)-2))
+        self.s = bytes((0, (self.nrow*self.ncol)-1))
         self.lastaction = None
         return self.s
