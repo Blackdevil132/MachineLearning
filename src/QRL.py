@@ -1,12 +1,9 @@
-import sys
 import numpy as np
 import random
 import datetime
 
-from Game import Game
-from tools import statusBar
-from GameEnemy import GameEnemy
-from QtableEnemy import QtableEnemy
+from src.GameEnemy import GameEnemy
+from src.QtableEnemy import QtableEnemy
 
 
 PATH = "qtables/"
@@ -22,7 +19,7 @@ class QRL:
         self.min_epsilon = 0.05
         self.decay_rate = decay_rate
 
-        self.qtable = QtableEnemy(4, 64, 64)
+        self.qtable = QtableEnemy(5, 64, 64)
         self.environment = GameEnemy(map_name="4x4") if env is None else env
 
         self.exportPath = None

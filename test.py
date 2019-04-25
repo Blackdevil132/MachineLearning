@@ -1,5 +1,4 @@
-from QRL import QRL
-from GameEnemy import GameEnemy
+from src.GameEnemy import GameEnemy
 
 
 env = GameEnemy()

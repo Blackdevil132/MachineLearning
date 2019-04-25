@@ -4,7 +4,7 @@ from six import StringIO
 from contextlib import closing
 from gym import utils
 from gym.envs.toy_text import discrete
-from helpers import generate_random_map
+from src.tools.helpers import generate_random_map
 
 
 LEFT = 0

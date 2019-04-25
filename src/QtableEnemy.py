@@ -1,5 +1,5 @@
 import numpy as np
-from Qtable import Qtable
+from src.Qtable import Qtable
 
 
 # Qtable for 2-dim storing
