@@ -4,33 +4,7 @@ from six import StringIO
 from contextlib import closing
 from gym import utils
 from gym.envs.toy_text import discrete
-
-
-LEFT = 0
-DOWN = 1
-RIGHT = 2
-UP = 3
-STAY = 4
-SLAY = 5
-
-MAPS = {
-    "4x4": [
-        "SFFF",
-        "FHFH",
-        "FFFH",
-        "HFFG"
-    ],
-    "8x8": [
-        "SFFFFFFF",
-        "FFFFFFFF",
-        "FFFHFFFF",
-        "FFFFFHFF",
-        "FFFHFFFF",
-        "FHHFFFHF",
-        "FHFFHFHF",
-        "FFFHFFFG"
-    ],
-}
+from defines import *
 
 
 class GameEnemy(discrete.DiscreteEnv):
@@ -167,6 +141,6 @@ class GameEnemy(discrete.DiscreteEnv):
                 return outfile.getvalue()
 
     def reset(self):
-        self.s = bytes((0, self.ncol-1))
+        self.s = bytes((0, self.ncol-1, self.ncol*(self.nrow-1)))
         self.lastaction = None
         return self.s

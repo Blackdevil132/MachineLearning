@@ -2,20 +2,16 @@ from src import QRL
 import numpy as np
 from src.tools.tools import timeit
 import sys
-from src.GameEnemy import GameEnemy
+from src.Game2Enemies import Game2Enemies
+from defines import *
 
-IntToAction = ["LEFT", "DOWN", "RIGHT", "UP", "STAYING", "SLAYING"]
+
 mapname="8x8"
-LEFT = 0
-DOWN = 1
-RIGHT = 2
-UP = 3
-STAY = 4
-SLAY = 5
+
 
 if len(sys.argv) < 5:
     # initialize standard parameters
-    total_episodes = 200
+    total_episodes = 100000
     learning_rate = 0.25
     discount_rate = 0.9
     decay_rate = 0.0001
@@ -27,8 +23,8 @@ else:
     decay_rate = float(sys.argv[4])
 
 
-qrl = QRL.QRL(env=GameEnemy(map_name=mapname), learning_rate=learning_rate, discount_rate=discount_rate, decay_rate=decay_rate)
-exec_time = timeit(qrl.run, [total_episodes, "qtables/190425_11"], 1)
+qrl = QRL.QRL(env=Game2Enemies(map_name=mapname), learning_rate=learning_rate, discount_rate=discount_rate, decay_rate=decay_rate)
+exec_time = timeit(qrl.run, [total_episodes, "qtable"], 1)
 
 # store exec_time in file
 with open("performance.csv", 'a') as file:
@@ -51,7 +47,7 @@ for i in range(numTests):
     for step in steps:
         total_rewards[i] += step[3]
 
-    if total_rewards[i] == 300:
+    if total_rewards[i] == -1:
         continue
 
     print("===== Test Game %i =====================" % (i+1))
@@ -61,20 +57,27 @@ for i in range(numTests):
         if j < 10:
             step_str += " "
         if step[1] == STAY:
-            step_str += "STAYING at %i. \t\t\t\t" % step[2][0]
+            step_str += "STAYING at %i. \t\t\t\t\t\t" % step[2][0]
         elif step[1] == SLAY:
-            step_str += "SLAYING Enemy at %i. \t\t" % step[0][1]
+            step_str += "SLAYING Enemy at %i. \t\t\t\t" % step[0][1]
         else:
             step_str += "Moving from %i %s to %i. \t" % (step[0][0], IntToAction[step[1]], step[2][0])
-            if len(step_str) <= 27:
+            if len(step_str) <= 31:
                 step_str += "\t\t"
 
         if step[2][1] == 255:
-            step_str += "Enemy DEAD. \t\t\t\t"
+            step_str += "Enemy 1 DEAD. \t\t\t\t"
         elif step[0][1] == step[2][1]:
-            step_str += "Enemy STAYING at %i. \t\t" % step[2][1]
+            step_str += "Enemy 1 STAYING at %i. \t\t\t" % step[2][1]
         else:
-            step_str += "Enemy moving from %i to %i. " % (step[0][1], step[2][1])
+            step_str += "Enemy 1 moving from %i to %i. \t" % (step[0][1], step[2][1])
+
+        if step[2][2] == 255:
+            step_str += "Enemy 2 DEAD. \t\t\t\t"
+        elif step[0][2] == step[2][2]:
+            step_str += "Enemy 2 STAYING at %i. \t\t" % step[2][2]
+        else:
+            step_str += "Enemy 2 moving from %i to %i. " % (step[0][2], step[2][2])
         step_str += "\tReward: %i." % step[3]
         print(step_str)
     print("Total Reward: %i\n" % total_rewards[i])
