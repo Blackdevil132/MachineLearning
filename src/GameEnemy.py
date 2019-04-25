@@ -167,6 +167,6 @@ class GameEnemy(discrete.DiscreteEnv):
                 return outfile.getvalue()
 
     def reset(self):
-        self.s = bytes((0, (self.nrow*self.ncol)-1))
+        self.s = bytes((0, self.ncol-1))
         self.lastaction = None
         return self.s
