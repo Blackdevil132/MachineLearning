@@ -1,12 +1,22 @@
 import numpy as np
 import random
 import datetime
+import time
+import sys
+import pygame as pg
+
+from src.pgassets.common.pgGrid import pgGrid
+from src.pgassets.game.pgField import pgField
+from src.pgassets.common.pgTextPanel import pgTextPanel
 
 from src.GameEnemy import GameEnemy
 from src.QtableEnemy import QtableEnemy
 
-
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+COLOR_BG = (230, 230, 230)
 PATH = "qtables/"
+MAP = bytes("FFFFFFFFFFFFFFFFFFFHFFFFFFFFFHFFFFFHFFFFFHHFFFHFFHFFHFHFFFFHFFFG", "utf8")
 max_steps = 50  # Max steps per episode
 
 
@@ -142,3 +152,175 @@ class QRL:
             self.environment.render()
 
         return steps
+
+    def test_visual_human(self):
+        # init pygame window
+        pg.init()
+        size = width, height = 1288, 1024
+        icon = pg.image.load("images/circuit_icon_32.png")
+        pg.display.set_icon(icon)
+        screen = pg.display.set_mode(size)
+        pg.display.set_caption("QRL Game")
+
+        def update():
+            screen.fill(COLOR_BG)
+            for asset in assets:
+                asset.draw(screen)
+
+            pg.display.flip()
+
+        def getField(state, unit=0):
+            units = [b'', b'K', b'E']
+            translator = {83: b'F', 70: b'F', 71: b'G', 72: b'H'}
+            field = translator[MAP[state]] + units[unit]
+            return field
+
+        # init assets
+        assets = []
+        fields = []
+        for i in range(len(MAP)):
+            fields.append(pgField((0, 0), (10, 10), getField(i), id=i))
+        fields[0].set_type(b'FK')
+        fields[63].set_type(b'GE')
+        court = pgGrid((0, 0), (1024, 1024), (8, 8), fields, borderwidth=5)
+        assets.append(court)
+
+        text_steps = pgTextPanel((1032, 64), (256, 64), "Steps: 0")
+        text_reward = pgTextPanel((1032, 128), (256, 64), "Reward: 0")
+        assets.append(text_steps)
+        assets.append(text_reward)
+
+        update()
+
+        # init Game
+        counter = 1
+        done = False
+        steps = []
+        total_reward = 0
+        state = self.environment.reset()
+        self.environment.render()
+        while not done and max_steps > len(steps):
+            # handle events
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    sys.exit()
+
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_LEFT:
+                        action = 0
+                    elif event.key == pg.K_DOWN:
+                        action = 1
+                    elif event.key == pg.K_RIGHT:
+                        action = 2
+                    elif event.key == pg.K_UP:
+                        action = 3
+                    elif event.key == pg.K_SPACE:
+                        action = 4
+                    else:
+                        action = -1
+
+                    if action in (0, 1, 2, 3, 4):
+                        newstate, reward, done, info = self.environment.step(action)
+                        steps.append((state, action, newstate, reward))
+
+                        total_reward += reward
+
+                        # update assets
+                        court.objects[state[0]].set_type(getField(state[0]))
+                        court.objects[newstate[0]].set_type(getField(newstate[0], 1))
+                        if newstate[1] != 255:
+                            court.objects[state[1]].set_type(getField(state[1]))
+                            court.objects[newstate[1]].set_type(getField(newstate[1], 2))
+
+                        text_steps.set_text("Steps: %i" % len(steps))
+                        text_reward.set_text("Reward: %i" % total_reward)
+
+                        update()
+
+                        state = newstate
+                        counter += 1
+
+        pg.quit()
+        sys.exit()
+
+    def test_visual(self):
+        # init pygame window
+        pg.init()
+        size = width, height = 1288, 1024
+        icon = pg.image.load("images/circuit_icon_32.png")
+        pg.display.set_icon(icon)
+        screen = pg.display.set_mode(size)
+        pg.display.set_caption("QRL Game")
+
+        def update():
+            screen.fill(COLOR_BG)
+            for asset in assets:
+                asset.draw(screen)
+
+            pg.display.flip()
+
+        def getField(state, unit=0):
+            units = [b'', b'K', b'E']
+            translator = {83: b'F', 70: b'F', 71: b'G', 72: b'H'}
+            field = translator[MAP[state]] + units[unit]
+            return field
+
+        force_exit = False
+        while not force_exit:
+
+            # init assets
+            assets = []
+            fields = []
+            for i in range(len(MAP)):
+                fields.append(pgField((0, 0), (10, 10), getField(i), id=i))
+            fields[0].set_type(b'FK')
+            fields[63].set_type(b'GE')
+            court = pgGrid((0, 0), (1024, 1024), (8, 8), fields, borderwidth=10)
+            assets.append(court)
+
+            text_steps = pgTextPanel((1032, 0), (256, 64), "Steps: 0")
+            text_reward = pgTextPanel((1032, 64), (256, 64), "Reward: 0")
+            text_decision = pgTextPanel((1032, 128), (256, 32), np.array2string(self.qtable.get(bytes((0, 0))), precision=0))
+            assets.append(text_steps)
+            assets.append(text_reward)
+            assets.append(text_decision)
+
+            update()
+
+            # init Game
+            counter = 1
+            done = False
+            steps = []
+            total_reward = 0
+            state = self.environment.reset()
+
+            while not done and max_steps > len(steps) and not force_exit:
+                #time.sleep(1)
+                # handle events
+                for event in pg.event.get():
+                    if event.type == pg.QUIT:
+                        force_exit = True
+
+                action = self.getNextAction(state, True)
+                if action in (0, 1, 2, 3, 4):
+                    newstate, reward, done, info = self.environment.step(action)
+                    steps.append((state, action, newstate, reward))
+
+                    total_reward += reward
+
+                    # update assets
+                    court.objects[state[0]].set_type(getField(state[0]))
+                    court.objects[newstate[0]].set_type(getField(newstate[0], 1))
+                    if newstate[1] != 255:
+                        court.objects[state[1]].set_type(getField(state[1]))
+                        court.objects[newstate[1]].set_type(getField(newstate[1], 2))
+
+                    text_steps.set_text("Steps: %i" % len(steps))
+                    text_reward.set_text("Reward: %i" % total_reward)
+                    dec_str = np.array2string(self.qtable.get(state), precision=0)
+                    assets.append(pgTextPanel((1032, 128 + counter*32), (256, 32), dec_str))
+                    update()
+
+                    state = newstate
+                    counter += 1
