@@ -105,7 +105,7 @@ class GameEnemy(discrete.DiscreteEnv):
                                     done = bytes(newletter) in b'GH'
                                     li.append((1.0, bytes((new_s, 255)), rew, done))
                                 else:
-                                    for a_e in range(4):
+                                    for a_e in range(nA+1):
                                         prob_a_e = enemy_pattern[to_s(row_e, col_e)][a_e]
                                         newrow_e, newcol_e = inc(row_e, col_e, a_e)
                                         new_s_e = to_s(newrow_e, newcol_e)

@@ -51,7 +51,8 @@ for i in range(numTests):
         print(j, "Enemy at %i. Moving from %i %s to %i.\t Reward: %i." % (step[0][1], step[0][0], IntToAction[step[1]], step[2][0], step[3]))
     print("Total Reward: %i\n" % total_rewards[i])
 
-print("\nAverage Reward over %i Games: %.2f" % (numTests, np.average(total_rewards)))
+print("\nMedian Reward: %.2f; Mean Reward: %.2f" % (np.median(total_rewards), np.mean(total_rewards)))
+print("Minimum Reward: %i; Maximum Reward: %i" % (total_rewards.min(), total_rewards.max()))
 #print("Exploitation-Exploration Ratio: %i:%i\n" % (qrl.expexpratio[0], qrl.expexpratio[1]))
 
 """

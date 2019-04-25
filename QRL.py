@@ -10,7 +10,7 @@ from QtableEnemy import QtableEnemy
 
 
 PATH = "qtables/"
-max_steps = 100  # Max steps per episode
+max_steps = 50  # Max steps per episode
 
 
 class QRL:
