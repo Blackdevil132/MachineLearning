@@ -24,4 +24,10 @@ MAPS = {
     ],
 }
 
-IntToAction = ["LEFT", "DOWN", "RIGHT", "UP", "STAYING", "SLAYING"]
+IntToAction = ["STAYING", "LEFT", "DOWN", "RIGHT", "UP", "SLAYING"]
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+COLOR_BG = (230, 230, 230)
+
+PATH = "qtables/"

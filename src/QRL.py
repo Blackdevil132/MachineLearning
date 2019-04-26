@@ -3,21 +3,13 @@ import random
 import datetime
 import time
 import sys
-import pygame as pg
 
-from src.pgassets.common.pgGrid import pgGrid
-from src.pgassets.game.pgField import pgField
-from src.pgassets.common.pgTextPanel import pgTextPanel
-
+from defines import *
 from src.Game2Enemies import Game2Enemies
 from src.Qtable3 import Qtable3
 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-COLOR_BG = (230, 230, 230)
-PATH = "qtables/"
 MAP = bytes("FFFFFFFFFFFFFFFFFFFHFFFFFFFFFHFFFFFHFFFFFHHFFFHFFHFFHFHFFFFHFFFG", "utf8")
-max_steps = 40  # Max steps per episode
+max_steps = 50  # Max steps per episode
 
 
 class QRL:
@@ -154,6 +146,8 @@ class QRL:
         return steps
 
     def test_visual_human(self):
+        import pygame as pg
+
         # init pygame window
         pg.init()
         size = width, height = 1288, 1024
@@ -245,6 +239,11 @@ class QRL:
         sys.exit()
 
     def test_visual(self):
+        import pygame as pg
+        from src.pgassets.common.pgGrid import pgGrid
+        from src.pgassets.game.pgField import pgField
+        from src.pgassets.common.pgTextPanel import pgTextPanel
+
         # init pygame window
         pg.init()
         size = width, height = 1332, 1024
@@ -315,10 +314,9 @@ class QRL:
 
                     if action == 5:
                         print(action, state, newstate)
-                        try:
+                        if state[1] != newstate[1] and newstate[1] == 255:
                             court.objects[state[1]].set_type(getField(state[1], 3))
-                            court.objects[state[2]].set_type(getField(state[2], 3))
-                        except IndexError:
+                        if state[2] != newstate[2] and newstate[2] == 255:
                             court.objects[state[2]].set_type(getField(state[2], 3))
 
                     # update assets
@@ -334,7 +332,7 @@ class QRL:
 
                     text_steps.set_text("Steps Remaining: %i" % (max_steps-len(steps)))
                     text_reward.set_text("Reward: %i" % total_reward)
-                    dec_str = np.array2string(self.qtable.get(state), precision=0)
+                    dec_str = np.array2string(self.qtable.get(state), precision=0, suppress_small=True)
                     assets.append(pgTextPanel((1032, 128 + counter*32), (300, 32), dec_str, fontsize=18))
                     update()
 

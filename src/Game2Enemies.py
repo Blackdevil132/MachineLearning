@@ -26,8 +26,8 @@ class Game2Enemies(discrete.DiscreteEnv):
 
         try:
             with open("transitions.pkl", 'rb') as file:
+                print("Trying to load Transition Matrix from %s..." % "transitions.pkl")
                 P = pickle.load(file)
-                print("Loaded Transition Matrix from file.")
         except FileNotFoundError:
             print("Computing Transition Matrix for Game...")
             P = {bytes((s, e1, e2)): {a: [] for a in range(nA)} for s in range(self.ncol*self.nrow) for e1 in range(self.ncol*self.nrow) for e2 in range(self.ncol*self.nrow)}
