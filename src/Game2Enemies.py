@@ -117,7 +117,7 @@ class Game2Enemies(discrete.DiscreteEnv):
                 # if enemy 2 is adjacent
                 elif a == SLAY and self.s[2] in adjacent and self.s[0] != self.s[2]:
                     for move in getEnemyMoves(self.s[1]):
-                        newstate = bytes((new_s, 255, move[1]))
+                        newstate = bytes((new_s, move[1], 255))
                         rew = self.reward_range[b'K']
                         transitions.append((move[0], newstate, rew, False))
 
@@ -137,8 +137,6 @@ class Game2Enemies(discrete.DiscreteEnv):
                                 rew = self.reward_range[newletter]
                             transitions.append((move_e1[0] * move_e2[0], newstate, rew, done))
 
-        for t in transitions:
-            print(t)
         i = discrete.categorical_sample([t[0] for t in transitions], self.np_random)
         p, s, r, d = transitions[i]
         self.s = s
