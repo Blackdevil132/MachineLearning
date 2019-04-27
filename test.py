@@ -33,7 +33,7 @@ with open("transitions/index.bin", 'wb') as index:
                     row_bytes = bytes((round(100*p), *[i for i in ns], r % (1 << 8), d))
                     file.write(row_bytes)
                     offset += 6
-                index.write(long2bytes(offset))
+                index.write(long2bytes(offset, 4))
 
 
 t1 = {bytes((0, 7, 56)): {0: [], 1: []}}
