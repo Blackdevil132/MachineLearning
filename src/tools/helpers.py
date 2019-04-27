@@ -70,3 +70,20 @@ def stepToString(step):
         output.append("Enemy 2 moving from %i to %i." % (step[0][2], step[2][2]))
     output.append("Reward: %i." % step[3])
     return "{: <30} {: <30} {: <30} {: <20}".format(*output)
+
+
+def bytes2long(bs, startIndex=0, length=8):
+    longValue = 0
+    for i in range(startIndex, startIndex + length):
+        longValue = longValue << 8
+        longValue |= (bs[i] & 0x000000ff)
+    return longValue
+
+
+def long2bytes(value, length=8):
+    destinationArray = [0 for i in range(length)]
+    for i in range(length - 1, - 1, -1):
+        destinationArray[i] = value & 0x000000ff
+        value = value >> 8
+
+    return bytes(destinationArray)
