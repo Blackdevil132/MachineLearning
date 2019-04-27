@@ -55,14 +55,14 @@ def stepToString(step):
     else:
         output.append("Moving from %i %s to %i." % (step[0][0], IntToAction[step[1]], step[2][0]))
 
-    if step[2][1] == 255:
+    if step[2][1] == 64:
         output.append("Enemy 1 is DEAD.")
     elif step[0][1] == step[2][1]:
         output.append("Enemy 1 is STAYING at %i." % step[2][1])
     else:
         output.append("Enemy 1 moving from %i to %i." % (step[0][1], step[2][1]))
 
-    if step[2][2] == 255:
+    if step[2][2] == 64:
         output.append("Enemy 2 is DEAD.")
     elif step[0][2] == step[2][2]:
         output.append("Enemy 2 is STAYING at %i." % step[2][2])

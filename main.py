@@ -13,7 +13,7 @@ show_qtable = False
 if len(sys.argv) < 5:
     # initialize standard parameters
     total_episodes = 500000
-    learning_rate = 0.5
+    learning_rate = 0.2
     discount_rate = 0.9
     decay_rate = 0.00012
 else:
@@ -25,7 +25,7 @@ else:
 
 
 qrl = QRL.QRL(env=Game2Enemies(map_name=mapname), learning_rate=learning_rate, discount_rate=discount_rate, decay_rate=decay_rate)
-exec_time = timeit(qrl.run, [total_episodes], 1)
+exec_time = timeit(qrl.run, [total_episodes, "qtables/190427_18"], 1)
 
 # store exec_time in file
 with open("performance.csv", 'a') as file:

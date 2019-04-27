@@ -111,11 +111,13 @@ class Game2Enemies(discrete.DiscreteEnv):
                                                     new_s_e, new_s_e2 = move_e[1], move_e2[1]
 
                                                     if a == SLAY:
+                                                        # slaying
                                                         adjacent = [to_s(*inc(row, col, d)) for d in range(1, 5)]
                                                         done = False
-                                                        rew = 0
+                                                        rew = self.reward_range[b'P']
                                                         if s[1] in adjacent and s[0] != s[1]:
                                                             if move_e[2] == SLAY:
+                                                                rew = 0
                                                                 new_s_e = s_e
                                                             else:
                                                                 rew = self.reward_range[b'K']
@@ -124,6 +126,7 @@ class Game2Enemies(discrete.DiscreteEnv):
                                                             # if slaying and enemy 2 is adjacent
                                                             if move_e2[2] == SLAY:
                                                                 # saved, if enemy is slaying aswell
+                                                                rew = 0
                                                                 new_s_e2 = s_e2
                                                             else:
                                                                 # dead if not
