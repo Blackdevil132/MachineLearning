@@ -1,3 +1,6 @@
+from defines import *
+
+
 def generate_random_map(size=8, p=0.8):
     """Generates a random valid map (one that has a path from start to goal)
     :param size: size of each side of the grid
@@ -36,3 +39,34 @@ def generate_random_map(size=8, p=0.8):
         res[-1][-1] = 'G'
         valid = is_valid(res)
     return ["".join(x) for x in res]
+
+
+def stepToString(step):
+    output = []
+    if step[1] == STAY:
+        output.append("STAYING at %i." % step[2][0])
+    elif step[1] == SLAY:
+        if step[2][1] == 255:
+            output.append("SLAYING Enemy at %i." % step[0][1])
+        elif step[2][2] == 255:
+            output.append("SLAYING Enemy at %i." % step[0][2])
+        else:
+            output.append("SLAYED Nothing.")
+    else:
+        output.append("Moving from %i %s to %i." % (step[0][0], IntToAction[step[1]], step[2][0]))
+
+    if step[2][1] == 255:
+        output.append("Enemy 1 is DEAD.")
+    elif step[0][1] == step[2][1]:
+        output.append("Enemy 1 is STAYING at %i." % step[2][1])
+    else:
+        output.append("Enemy 1 moving from %i to %i." % (step[0][1], step[2][1]))
+
+    if step[2][2] == 255:
+        output.append("Enemy 2 is DEAD.")
+    elif step[0][2] == step[2][2]:
+        output.append("Enemy 2 is STAYING at %i." % step[2][2])
+    else:
+        output.append("Enemy 2 moving from %i to %i." % (step[0][2], step[2][2]))
+    output.append("Reward: %i." % step[3])
+    return "{: <30} {: <30} {: <30} {: <20}".format(*output)

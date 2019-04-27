@@ -3,21 +3,13 @@ import random
 import datetime
 import time
 import sys
-import pygame as pg
 
-from src.pgassets.common.pgGrid import pgGrid
-from src.pgassets.game.pgField import pgField
-from src.pgassets.common.pgTextPanel import pgTextPanel
+from defines import *
+from src.Game2Enemies import Game2Enemies
+from src.Qtable3 import Qtable3
 
-from src.GameEnemy import GameEnemy
-from src.QtableEnemy import QtableEnemy
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-COLOR_BG = (230, 230, 230)
-PATH = "qtables/"
 MAP = bytes("FFFFFFFFFFFFFFFFFFFHFFFFFFFFFHFFFFFHFFFFFHHFFFHFFHFFHFHFFFFHFFFG", "utf8")
-max_steps = 25  # Max steps per episode
+max_steps = 50  # Max steps per episode
 
 
 class QRL:
@@ -29,8 +21,8 @@ class QRL:
         self.min_epsilon = 0.05
         self.decay_rate = decay_rate
 
-        self.qtable = QtableEnemy(6, 64, 64)
-        self.environment = GameEnemy(map_name="4x4") if env is None else env
+        self.qtable = Qtable3(6, 64, 64, 64)
+        self.environment = Game2Enemies(map_name="4x4") if env is None else env
 
         self.exportPath = None
 
@@ -154,6 +146,8 @@ class QRL:
         return steps
 
     def test_visual_human(self):
+        import pygame as pg
+
         # init pygame window
         pg.init()
         size = width, height = 1288, 1024
@@ -245,6 +239,11 @@ class QRL:
         sys.exit()
 
     def test_visual(self):
+        import pygame as pg
+        from src.pgassets.common.pgGrid import pgGrid
+        from src.pgassets.game.pgField import pgField
+        from src.pgassets.common.pgTextPanel import pgTextPanel
+
         # init pygame window
         pg.init()
         size = width, height = 1332, 1024
@@ -276,13 +275,15 @@ class QRL:
             for i in range(len(MAP)):
                 fields.append(pgField((0, 0), (10, 10), getField(i), id=i))
             fields[0].set_type(b'FK')
-            fields[63].set_type(b'GE')
+            fields[63].set_type(b'G')
+            fields[7].set_type(b'FE')
+            fields[56].set_type(b'FE')
             court = pgGrid((0, 0), (1024, 1024), (8, 8), fields, borderwidth=10)
             assets.append(court)
 
             text_steps = pgTextPanel((1032, 0), (300, 64), "Steps Remaining: %i" % max_steps)
             text_reward = pgTextPanel((1182, 64), (150, 64), "Reward: 0")
-            text_decision = pgTextPanel((1032, 128), (300, 32), np.array2string(self.qtable.get(bytes((0, 63))), precision=0), fontsize=18)
+            text_decision = pgTextPanel((1032, 128), (300, 32), np.array2string(self.qtable.get(bytes((0, 7, 56))), precision=0), fontsize=18)
             assets.append(text_steps)
             assets.append(text_reward)
             assets.append(text_last_reward)
@@ -298,7 +299,7 @@ class QRL:
             state = self.environment.reset()
 
             while not done and max_steps > len(steps) and not force_exit:
-                time.sleep(0.8)
+                time.sleep(0.4)
                 # handle events
                 for event in pg.event.get():
                     if event.type == pg.QUIT:
@@ -313,7 +314,10 @@ class QRL:
 
                     if action == 5:
                         print(action, state, newstate)
-                        court.objects[state[1]].set_type(getField(state[1], 3))
+                        if state[1] != newstate[1] and newstate[1] == 255:
+                            court.objects[state[1]].set_type(getField(state[1], 3))
+                        if state[2] != newstate[2] and newstate[2] == 255:
+                            court.objects[state[2]].set_type(getField(state[2], 3))
 
                     # update assets
                     court.objects[state[0]].set_type(getField(state[0]))
@@ -322,9 +326,13 @@ class QRL:
                         court.objects[state[1]].set_type(getField(state[1]))
                         court.objects[newstate[1]].set_type(getField(newstate[1], 2))
 
+                    if state[2] != 255 and newstate[2] != 255:
+                        court.objects[state[2]].set_type(getField(state[2]))
+                        court.objects[newstate[2]].set_type(getField(newstate[2], 2))
+
                     text_steps.set_text("Steps Remaining: %i" % (max_steps-len(steps)))
                     text_reward.set_text("Reward: %i" % total_reward)
-                    dec_str = np.array2string(self.qtable.get(state), precision=0)
+                    dec_str = np.array2string(self.qtable.get(state), precision=0, suppress_small=True)
                     assets.append(pgTextPanel((1032, 128 + counter*32), (300, 32), dec_str, fontsize=18))
                     update()
 
