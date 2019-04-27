@@ -1,4 +1,5 @@
 from defines import *
+import numpy as np
 
 
 def generate_random_map(size=8, p=0.8):
@@ -70,3 +71,42 @@ def stepToString(step):
         output.append("Enemy 2 moving from %i to %i." % (step[0][2], step[2][2]))
     output.append("Reward: %i." % step[3])
     return "{: <30} {: <30} {: <30} {: <20}".format(*output)
+
+
+def getEnemyPattern(nrow, ncol, nA_e):
+    pattern = {i: np.zeros(nA_e) for i in range(nrow * ncol)}
+    for row in range(nrow):
+        for col in range(ncol):
+            possible_moves = np.zeros(nA_e)
+            for a in range(nA_e):
+                newrow, newcol = inc(row, col, a, nrow, ncol)
+                if a != STAY and to_s(row, col, ncol) == to_s(newrow, newcol, ncol):
+                    pattern[to_s(row, col, ncol)][a] = 0
+                else:
+                    possible_moves[a] = True
+
+            for a in range(nA_e):
+                if possible_moves[a]:
+                    pattern[to_s(row, col, ncol)][a] = 1.0 / possible_moves.sum()
+
+    pattern[255] = np.zeros(nA_e)
+    pattern[255][0] = 1.0
+    return pattern
+
+
+def to_s(row, col, ncol):
+    return row * ncol + col
+
+
+def inc(row, col, a, nrow, ncol):
+    if a == LEFT:
+        col = max(col - 1, 0)
+    elif a == DOWN:
+        row = min(row + 1, nrow - 1)
+    elif a == RIGHT:
+        col = min(col + 1, ncol - 1)
+    elif a == UP:
+        row = max(row - 1, 0)
+    elif a in [STAY, SLAY]:
+        pass
+    return (row, col)
