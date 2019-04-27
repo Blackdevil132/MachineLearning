@@ -313,20 +313,19 @@ class QRL:
                     total_reward += reward
 
                     if action == 5:
-                        print(action, state, newstate)
-                        if state[1] != newstate[1] and newstate[1] == 255:
+                        if state[1] != newstate[1] and newstate[1] == 64:
                             court.objects[state[1]].set_type(getField(state[1], 3))
-                        if state[2] != newstate[2] and newstate[2] == 255:
+                        if state[2] != newstate[2] and newstate[2] == 64:
                             court.objects[state[2]].set_type(getField(state[2], 3))
 
                     # update assets
                     court.objects[state[0]].set_type(getField(state[0]))
                     court.objects[newstate[0]].set_type(getField(newstate[0], 1))
-                    if state[1] != 255 and newstate[1] != 255:
+                    if state[1] != 64 and newstate[1] != 64:
                         court.objects[state[1]].set_type(getField(state[1]))
                         court.objects[newstate[1]].set_type(getField(newstate[1], 2))
 
-                    if state[2] != 255 and newstate[2] != 255:
+                    if state[2] != 64 and newstate[2] != 64:
                         court.objects[state[2]].set_type(getField(state[2]))
                         court.objects[newstate[2]].set_type(getField(newstate[2], 2))
 
