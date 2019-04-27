@@ -18,19 +18,19 @@ class Game2Enemies(discrete.DiscreteEnv):
         self.reward_range = {b'F': 0, b'H': -100, b'G': 200, b'S': 0, b'K': 100, b'P': -100}
 
         nA = 6
-        nA_e = 5
-        nS = (self.nrow * self.ncol)**3
+        nA_e = 6
+        nS = (self.nrow * self.ncol) * ((self.nrow * self.ncol) + 1) * ((self.nrow * self.ncol) + 1)
 
         isd = np.array(desc == b'S').astype('float64').ravel()
         isd /= isd.sum()
 
         try:
             with open("transitions.pkl", 'rb') as file:
-                print("Trying to load Transition Matrix from %s..." % "transitions.pkl")
+                print("Loading Transition Matrix from %s..." % "transitions.pkl")
                 P = pickle.load(file)
         except FileNotFoundError:
             print("Computing Transition Matrix for Game...")
-            P = {bytes((s, e1, e2)): {a: [] for a in range(nA)} for s in range(self.ncol*self.nrow) for e1 in range(self.ncol*self.nrow) for e2 in range(self.ncol*self.nrow)}
+            P = {bytes((s, e1, e2)): {a: [] for a in range(nA)} for s in range(self.ncol*self.nrow) for e1 in range(self.ncol*self.nrow + 1) for e2 in range(self.ncol*self.nrow + 1)}
 
             def to_s(row, col):
                 return row * ncol + col
@@ -55,7 +55,7 @@ class Game2Enemies(discrete.DiscreteEnv):
                         possible_moves = np.zeros(nA_e)
                         for a in range(nA_e):
                             newrow, newcol = inc(row, col, a)
-                            if a != STAY and to_s(row, col) == to_s(newrow, newcol):
+                            if a not in [STAY, SLAY] and to_s(row, col) == to_s(newrow, newcol):
                                 pattern[to_s(row, col)][a] = 0
                             else:
                                 possible_moves[a] = True
@@ -64,22 +64,30 @@ class Game2Enemies(discrete.DiscreteEnv):
                             if possible_moves[a]:
                                 pattern[to_s(row, col)][a] = 1.0 / possible_moves.sum()
 
-                pattern[255] = np.zeros(nA_e)
-                pattern[255][0] = 1.0
+                pattern[64] = np.zeros(nA_e)
+                pattern[64][0] = 1.0
                 return pattern
 
             enemy_pattern = getEnemyPattern(nrow, ncol)
 
+            def getEnemyMoves(s):
+                moves = []
+                row_e, col_e = s // self.ncol, s % self.ncol
+                for a_e in range(nA_e):
+                    prob_a_e = enemy_pattern[s][a_e]
+                    newrow_e, newcol_e = inc(row_e, col_e, a_e)
+                    new_s_e = to_s(newrow_e, newcol_e)
+                    moves.append((prob_a_e, new_s_e, a_e))
+
+                return moves
+
             for row in range(nrow):
                 for col in range(ncol):
-                    for s_e in [i for i in range(nrow*ncol)] + [255]:
+                    for s_e in range(nrow*ncol + 1):
                         row_e, col_e = s_e // ncol, s_e % ncol
-                        for s_e2 in [j for j in range(nrow*ncol)] + [255]:
+                        for s_e2 in range(nrow*ncol + 1):
                             row_e2, col_e2 = s_e2 // ncol, s_e2 % ncol
                             s = bytes((to_s(row, col), s_e, s_e2))
-                            # enemy 1 is dead
-                            if s_e == 255 or s_e2 == 255:
-                                P[s] = {a: [] for a in range(nA)}
 
                             for a in range(nA):
                                 li = P[s][a]
@@ -93,55 +101,54 @@ class Game2Enemies(discrete.DiscreteEnv):
                                     new_s = to_s(newrow, newcol)
                                     if new_s in [s[1], s[2]]:
                                         # Agent moved into Enemy; not allowed
-                                        newletter = desc[newrow, newcol]
                                         rew = self.reward_range[b'P']
-                                        done = bytes(newletter) in b'GH'
-                                        # TODO maybe fix wrong state assignment
-                                        li.append((0.0, bytes((new_s, s[1], s[2])), rew, done))
+                                        li.append((1.0, bytes((new_s, s[1], s[2])), rew, True))
                                     else:
-                                        adjacent = [to_s(*inc(row, col, d)) for d in range(4)]
-                                        # if enemy 1 is adjacent
-                                        if a == SLAY and s[1] in adjacent and s[0] != s[1]:
-                                            for a_e2 in range(nA_e):
-                                                prob_a_e2 = enemy_pattern[to_s(row_e2, col_e2)][a_e2]
-                                                newrow_e2, newcol_e2 = inc(row_e2, col_e2, a_e2)
-                                                new_s_e2 = to_s(newrow_e2, newcol_e2)
-                                                newstate = bytes((new_s, 255, new_s_e2))
-                                                rew = self.reward_range[b'K']
-                                                li.append((prob_a_e2, newstate, rew, False))
+                                        # allowed movement
+                                        for move_e in getEnemyMoves(s[1]):
+                                            for move_e2 in getEnemyMoves(s[2]):
+                                                if move_e[0] * move_e2[0] != 0:
+                                                    new_s_e, new_s_e2 = move_e[1], move_e2[1]
 
-                                        # if enemy 2 is adjacent
-                                        elif a == SLAY and s[2] in adjacent and s[0] != s[2]:
-                                            for a_e in range(nA_e):
-                                                prob_a_e = enemy_pattern[to_s(row_e, col_e)][a_e]
-                                                newrow_e, newcol_e = inc(row_e, col_e, a_e)
-                                                new_s_e = to_s(newrow_e, newcol_e)
-                                                newstate = bytes((new_s, new_s_e, 255))
-                                                rew = self.reward_range[b'K']
-                                                li.append((prob_a_e, newstate, rew, False))
-
-                                        # normal movement
-                                        else:
-                                            for a_e in range(nA_e if s_e != 255 else 1):
-                                                for a_e2 in range(nA_e if s_e2 != 255 else 1):
-                                                    # enemy 1 movement
-                                                    prob_a_e = enemy_pattern[s_e][a_e]
-                                                    newrow_e, newcol_e = inc(row_e, col_e, a_e)
-                                                    new_s_e = to_s(newrow_e, newcol_e)
-
-                                                    # enemy 2 movement
-                                                    prob_a_e2 = enemy_pattern[s_e2][a_e2]
-                                                    newrow_e2, newcol_e2 = inc(row_e2, col_e2, a_e2)
-                                                    new_s_e2 = to_s(newrow_e2, newcol_e2)
-                                                    newstate = bytes((new_s, new_s_e, new_s_e2))
-                                                    newletter = desc[newrow, newcol]
-                                                    done = bytes(newletter) in b'GH' or newstate[0] in [newstate[1], newstate[2]]
-                                                    # penalize moving out of bounds
-                                                    if a != STAY and newstate[0] == s[0]:
-                                                        rew = self.reward_range[b'P']
+                                                    if a == SLAY:
+                                                        adjacent = [to_s(*inc(row, col, d)) for d in range(1, 5)]
+                                                        done = False
+                                                        rew = 0
+                                                        if s[1] in adjacent and s[0] != s[1]:
+                                                            if move_e[2] == SLAY:
+                                                                new_s_e = s_e
+                                                            else:
+                                                                rew = self.reward_range[b'K']
+                                                                new_s_e = 64
+                                                        if s[2] in adjacent and s[0] != s[2]:
+                                                            # if slaying and enemy 2 is adjacent
+                                                            if move_e2[2] == SLAY:
+                                                                # saved, if enemy is slaying aswell
+                                                                new_s_e2 = s_e2
+                                                            else:
+                                                                # dead if not
+                                                                rew = self.reward_range[b'K']
+                                                                new_s_e2 = 64
                                                     else:
-                                                        rew = self.reward_range[newletter]
-                                                    li.append((prob_a_e*prob_a_e2, newstate, rew, done))
+                                                        newletter = desc[newrow, newcol]
+                                                        # moving or staying
+                                                        if move_e[2] == SLAY and new_s in [to_s(*inc(row_e, col_e, d)) for d in range(1, 5)]:
+                                                            # moving next to enemy 1 who is attacking, dead
+                                                            done = True
+                                                        elif move_e2[2] == SLAY and new_s in [to_s(*inc(row_e2, col_e2, d)) for d in range(1, 5)]:
+                                                            # moving next to enemy 2 who is attacking, dead
+                                                            done = True
+                                                        else:
+                                                            done = bytes(newletter) in b'GH' or new_s in [new_s_e, new_s_e2]
+
+                                                        # penalize moving out of bounds
+                                                        if a != STAY and new_s == s[0]:
+                                                            rew = self.reward_range[b'P']
+                                                        else:
+                                                            rew = self.reward_range[newletter]
+
+                                                    newstate = bytes((new_s, new_s_e, new_s_e2))
+                                                    li.append((move_e[0] * move_e2[0], newstate, rew, done))
 
             with open("transitions.pkl", 'wb') as file:
                 pickle.dump(P, file, pickle.HIGHEST_PROTOCOL)
@@ -166,7 +173,7 @@ class Game2Enemies(discrete.DiscreteEnv):
         except IndexError:
             pass
         if self.lastaction is not None:
-            outfile.write("  ({})\n".format(["Left", "Down", "Right", "Up"][self.lastaction]))
+            outfile.write("  ({})\n".format(["Stay", "Left", "Down", "Right", "Up", "Slay"][self.lastaction]))
         else:
             outfile.write("\n")
         outfile.write("\n".join(''.join(line) for line in desc) + "\n")

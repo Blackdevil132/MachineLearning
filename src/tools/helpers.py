@@ -46,9 +46,9 @@ def stepToString(step):
     if step[1] == STAY:
         output.append("STAYING at %i." % step[2][0])
     elif step[1] == SLAY:
-        if step[2][1] == 255:
+        if step[2][1] == 64:
             output.append("SLAYING Enemy at %i." % step[0][1])
-        elif step[2][2] == 255:
+        elif step[2][2] == 64:
             output.append("SLAYING Enemy at %i." % step[0][2])
         else:
             output.append("SLAYED Nothing.")

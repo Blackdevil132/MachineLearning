@@ -9,12 +9,15 @@ class Qtable3(Qtable):
         self.action_space = action_space
         self.observation_space = (observation_space_1, observation_space_2, observation_space_3)
 
-        self.table = [{j: {k: np.zeros(action_space) for k in [e2 for e2 in range(observation_space_3)] + [255]} for j in [e1 for e1 in range(observation_space_2)]+[255]} for i in range(observation_space_1)]
+        self.table = [{j: {k: np.zeros(action_space) for k in [e2 for e2 in range(observation_space_3)]} for j in [e1 for e1 in range(observation_space_2)]} for i in range(observation_space_1)]
 
     def get(self, state, action=None):
         #print(state[0], state[1], state[2])
         if action is None:
-            return self.table[state[0]][state[1]][state[2]][:]
+            try:
+                return self.table[state[0]][state[1]][state[2]][:]
+            except KeyError:
+                print("Error at ", state[0], state[1], state[2])
 
         return self.table[state[0]][state[1]][state[2]][action]
 

@@ -21,8 +21,8 @@ class QRL:
         self.min_epsilon = 0.05
         self.decay_rate = decay_rate
 
-        self.qtable = Qtable3(6, 64, 64, 64)
-        self.environment = Game2Enemies(map_name="4x4") if env is None else env
+        self.qtable = Qtable3(6, 64, 65, 65)
+        self.environment = Game2Enemies(map_name="8x8") if env is None else env
 
         self.exportPath = None
 
