@@ -28,122 +28,18 @@ with open("transitions.pkl", 'rb') as f:
     print("done")
 
 
-def save(transitions):
-    print("Constructing archive files...")
-    offset = [0 for i in range(37)]
-    os.makedirs("transitions", exist_ok=True)
-    index_cached = bytearray()
-    files_cached = [bytearray() for i in range(37)]
-    for s in transitions.keys():
-        for a in transitions[s]:
-            len_t = len(transitions[s][a])
-            index_entry = long2bytes(offset[len_t], 1, 4)
-            index_entry[0] = len_t
-            index_cached += index_entry
-            for t in transitions[s][a]:
-                p, ns, r, d = t
-                row_bytes = bytes((round(100*float(p)), *[i for i in ns], r % (1 << 8), d))
-                files_cached[len_t] += row_bytes
-                offset[len_t] += 6
-
-    print("Writing archives to disk...", end='')
-    for i in range(37):
-        if files_cached[i] != b'':
-            with open("transitions/%i" % i, 'ab') as file:
-                file.write(files_cached[i])
-    print("done")
-
-    with open("transitions/index.bin", 'wb') as index:
-        print("Writing index to disk...", end='')
-        index.write(index_cached)
-
-    print("complete")
-
-
-def load():
-    print("Loading from archive...", end='')
-    transitions = {}
-    with open("transitions/index.bin", 'rb') as index:
-        for s1 in range(64):
-            for s2 in range(65):
-                for s3 in range(65):
-                    s = bytes((s1, s2, s3))
-                    transitions[s] = {}
-                    for a in range(6):
-                        transitions[s][a] = []
-                        index_entry = index.read(5)
-                        if index_entry == b'':
-                            break
-                        file_id = bytes2long(index_entry, 0, 1)
-                        file_offset = bytes2long(index_entry, 1, 4)
-                        #print(file_id, file_offset)
-                        with open("transitions/%i" % file_id, 'rb') as file:
-                            file.seek(file_offset)
-                            for i in range(file_id):
-                                inp = file.read(6)
-                                if inp == b'':
-                                    break
-                                transitions[s][a].append((inp[0]/100.0, inp[1:4], inp[4] if inp[4] < 128 else inp[4] % -(1 << 8), bool(inp[5])))
-
-    print("done")
-    return transitions
-
-
-def load_o():
-    print("Loading Index...", end='')
-    transitions = {}
-    with open("transitions/index.bin", 'rb') as index:
-        index_cached = index.read()
-        index_offset = 0
-    print("done")
-
-    print("Loading archive files...", end='')
-    files_cached = [b'' for i in range(37)]
-    for file_id in range(37):
-        try:
-            with open("transitions/%i" % file_id, 'rb') as file:
-                files_cached[file_id] = file.read()
-        except FileNotFoundError:
-            pass
-    print("done")
-
-    print("Reconstructing Matrix...", end='')
-    for s1 in range(64):
-        for s2 in range(65):
-            for s3 in range(65):
-                s = bytes((s1, s2, s3))
-                transitions[s] = {}
-                for a in range(6):
-                    transitions[s][a] = []
-                    index_entry = index_cached[index_offset:index_offset+5]
-                    if index_entry == b'':
-                        break
-                    file_id = bytes2long(index_entry, 0, 1)
-                    file_offset = bytes2long(index_entry, 1, 4)
-                    row = files_cached[file_id][file_offset:file_offset+(6*file_id)]
-                    for i in range(file_id):
-                        inp = row[i*6:(i+1)*6]
-                        if inp == b'':
-                            break
-                        transitions[s][a].append((inp[0]/100.0, inp[1:4], inp[4] if inp[4] < 128 else inp[4] % -(1 << 8), bool(inp[5])))
-
-                    index_offset += 5
-
-    print("done")
-    return transitions
-
-
-#timeit(save, [transitions])
+timeit(save, [transitions])
 t1 = timeit(load_o, [])
 
 print("OK")
 limit = 5
 counter = 0
 for s in t1.keys():
-    if counter > limit:
-        break
-    for a in t1[s]:
-        print(s, a, t1[s][a])
-        print(s, a, transitions[s][a])
-        print()
-    counter +=1
+    for a in transitions[s]:
+        if transitions[s][a] != t1[s][a]:
+            print(s, a)
+            print(transitions[s][a])
+            print(t1[s][a])
+            break
+
+print(counter)

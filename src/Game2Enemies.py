@@ -5,6 +5,7 @@ from contextlib import closing
 from gym import utils
 from gym.envs.toy_text import discrete
 from defines import *
+from src.tools.helpers import loadTransitions, saveTransitions
 
 
 class Game2Enemies(discrete.DiscreteEnv):
@@ -25,9 +26,7 @@ class Game2Enemies(discrete.DiscreteEnv):
         isd /= isd.sum()
 
         try:
-            with open("transitions.pkl", 'rb') as file:
-                print("Loading Transition Matrix from %s..." % "transitions.pkl")
-                P = pickle.load(file)
+            P = loadTransitions()
         except FileNotFoundError:
             print("Computing Transition Matrix for Game...")
             P = {bytes((s, e1, e2)): {a: [] for a in range(nA)} for s in range(self.ncol*self.nrow) for e1 in range(self.ncol*self.nrow + 1) for e2 in range(self.ncol*self.nrow + 1)}
@@ -153,8 +152,7 @@ class Game2Enemies(discrete.DiscreteEnv):
                                                     newstate = bytes((new_s, new_s_e, new_s_e2))
                                                     li.append((move_e[0] * move_e2[0], newstate, rew, done))
 
-            with open("transitions.pkl", 'wb') as file:
-                pickle.dump(P, file, pickle.HIGHEST_PROTOCOL)
+            saveTransitions(P)
 
         super(Game2Enemies, self).__init__(nS, nA, P, isd)
 

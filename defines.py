@@ -31,3 +31,9 @@ BLACK = (0, 0, 0)
 COLOR_BG = (230, 230, 230)
 
 PATH = "qtables/"
+
+NUM_ACTIONS = 6
+NUM_ROWS = 8
+NUM_COLS = 8
+
+NUM_STATES = NUM_ROWS * NUM_COLS

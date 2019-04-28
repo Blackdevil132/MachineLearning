@@ -1,4 +1,5 @@
 from defines import *
+import os
 
 
 def generate_random_map(size=8, p=0.8):
@@ -87,3 +88,84 @@ def long2bytes(value, startIndex=0, length=8):
         value = value >> 8
 
     return bytearray(destinationArray)
+
+
+BYTES_FIELD = 5
+BYTES_INDEX = 5
+NUM_FILES = NUM_ACTIONS * NUM_ACTIONS + 1
+
+
+def saveTransitions(transitions):
+    print("Constructing archive files...")
+    offset = [0 for i in range(NUM_FILES)]
+    os.makedirs("transitions", exist_ok=True)
+    index_cached = bytearray()
+    files_cached = [bytearray() for i in range(NUM_FILES)]
+    for s in transitions.keys():
+        for a in transitions[s]:
+            len_t = len(transitions[s][a])
+            index_entry = long2bytes(offset[len_t], 1, BYTES_INDEX-1)
+            index_entry[0] = len_t
+            index_cached += index_entry
+            for t in transitions[s][a]:
+                p, ns, r, d = t
+                row_bytes = bytes((*[i for i in ns], r % (1 << 8), d))
+                files_cached[len_t] += row_bytes
+                offset[len_t] += BYTES_FIELD
+
+    print("Writing archives to disk...", end='')
+    for i in range(NUM_FILES):
+        if files_cached[i] != b'':
+            with open("transitions/%i" % i, 'ab') as file:
+                file.write(files_cached[i])
+    print("done")
+
+    with open("transitions/index.bin", 'wb') as index:
+        print("Writing index to disk...", end='')
+        index.write(index_cached)
+
+    print("complete")
+
+
+def loadTransitions():
+    print("Loading Index...", end='')
+    transitions = {}
+    with open("transitions/index.bin", 'rb') as index:
+        index_cached = index.read()
+        index_offset = 0
+    print("done")
+
+    print("Loading archive files...", end='')
+    files_cached = [b'' for i in range(NUM_FILES)]
+    for file_id in range(NUM_FILES):
+        try:
+            with open("transitions/%i" % file_id, 'rb') as file:
+                files_cached[file_id] = file.read()
+        except FileNotFoundError:
+            pass
+    print("done")
+
+    print("Reconstructing Matrix...", end='')
+    for s1 in range(NUM_STATES):
+        for s2 in range(NUM_STATES+1):
+            for s3 in range(NUM_STATES+1):
+                s = bytes((s1, s2, s3))
+                transitions[s] = {}
+                for a in range(NUM_ACTIONS):
+                    transitions[s][a] = []
+                    index_entry = index_cached[index_offset:index_offset+BYTES_INDEX]
+                    if index_entry == b'':
+                        break
+                    file_id = bytes2long(index_entry, 0, 1)
+                    file_offset = bytes2long(index_entry, 1, BYTES_INDEX-1)
+                    row = files_cached[file_id][file_offset:file_offset+(BYTES_FIELD*file_id)]
+                    for i in range(file_id):
+                        inp = row[i*BYTES_FIELD:(i+1)*BYTES_FIELD]
+                        if inp == b'':
+                            break
+                        transitions[s][a].append((1.0/file_id, inp[0:3], inp[3] if inp[3] < 128 else inp[3] % -(1 << 8), bool(inp[4])))
+
+                    index_offset += BYTES_INDEX
+
+    print("done")
+    return transitions
