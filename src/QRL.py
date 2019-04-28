@@ -8,9 +8,6 @@ from defines import *
 from src.Game2Enemies import Game2Enemies
 from src.Qtable3 import Qtable3
 
-MAP = bytes("FFFFFFFFFFFFFFFFFFFHFFFFFFFFFHFFFFFHFFFFFHHFFFHFFHFFHFHFFFFHFFFG", "utf8")
-max_steps = 40  # Max steps per episode
-
 
 class QRL:
     def __init__(self, env=None, learning_rate=0.8, discount_rate=0.9, decay_rate=0.0001):
@@ -85,7 +82,7 @@ class QRL:
             # execute one iteration of the game
             steps = []
             done = False
-            while not done and len(steps) < max_steps:
+            while not done and len(steps) < MAX_STEPS:
                 action = self.getNextAction(state)
                 new_state, reward, done, p = self.environment.step(action)
                 steps.append((state, action, new_state, reward, done))
@@ -133,7 +130,7 @@ class QRL:
         steps = []
         done = False
         state = self.environment.reset()
-        while not done and max_steps > len(steps):
+        while not done and MAX_STEPS > len(steps):
             if render:
                 self.environment.render("human")
             action = self.getNextAction(state, True)
@@ -193,7 +190,7 @@ class QRL:
         total_reward = 0
         state = self.environment.reset()
         self.environment.render()
-        while not done and max_steps > len(steps):
+        while not done and MAX_STEPS > len(steps):
             # handle events
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -281,7 +278,7 @@ class QRL:
             court = pgGrid((0, 0), (1024, 1024), (8, 8), fields, borderwidth=10)
             assets.append(court)
 
-            text_steps = pgTextPanel((1032, 0), (300, 64), "Steps Remaining: %i" % max_steps)
+            text_steps = pgTextPanel((1032, 0), (300, 64), "Steps Remaining: %i" % MAX_STEPS)
             text_reward = pgTextPanel((1182, 64), (150, 64), "Reward: 0")
             text_decision = pgTextPanel((1032, 128), (300, 32), np.array2string(self.qtable.get(bytes((0, 7, 56))), precision=0), fontsize=18)
             assets.append(text_steps)
@@ -298,7 +295,7 @@ class QRL:
             total_reward = 0
             state = self.environment.reset()
 
-            while not done and max_steps > len(steps) and not force_exit:
+            while not done and MAX_STEPS > len(steps) and not force_exit:
                 time.sleep(0.4)
                 # handle events
                 for event in pg.event.get():
@@ -329,7 +326,7 @@ class QRL:
                         court.objects[state[2]].set_type(getField(state[2]))
                         court.objects[newstate[2]].set_type(getField(newstate[2], 2))
 
-                    text_steps.set_text("Steps Remaining: %i" % (max_steps-len(steps)))
+                    text_steps.set_text("Steps Remaining: %i" % (MAX_STEPS - len(steps)))
                     text_reward.set_text("Reward: %i" % total_reward)
                     dec_str = np.array2string(self.qtable.get(state), precision=0, suppress_small=True)
                     assets.append(pgTextPanel((1032, 128 + counter*32), (300, 32), dec_str, fontsize=18))
