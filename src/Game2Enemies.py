@@ -15,7 +15,7 @@ class Game2Enemies(discrete.DiscreteEnv):
             desc = MAPS[map_name]
         self.desc = desc = np.asarray(desc, dtype='c')
         self.nrow, self.ncol = nrow, ncol = desc.shape
-        self.reward_range = {b'F': 0, b'H': -100, b'G': 200, b'S': 0, b'K': 100, b'P': -100}
+        self.reward_range = {b'F': 0, b'H': -100, b'G': 100, b'S': 0, b'K': 50, b'P': -100}
 
         nA = 6
         nA_e = 6

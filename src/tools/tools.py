@@ -190,7 +190,7 @@ def timeit(func, args, loops=None):
         ret = func(*args)
         end = time.perf_counter()
 
-        print("Execution Time for %s%s: %.3f ms" % (func.__name__, str(args), (end-start)*1000))
+        print("Execution Time for %s: %.3f s" % (func.__name__, (end-start)))
 
         return ret
 
@@ -199,7 +199,7 @@ def timeit(func, args, loops=None):
         func(*args)
     end = time.perf_counter()
 
-    print("%i Loops, Average Execution Time for %s%s: %.3f ms" % (loops, func.__name__, str(args), 1000*(end-start)/loops))
+    print("%i Loops, Average Execution Time for %s: %.3f ms" % (loops, func.__name__, (end-start)/loops))
     return (end-start)/loops
 
 
