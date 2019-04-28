@@ -50,11 +50,12 @@ for i in range(NUM_TESTS):
     if total_rewards[i] == 200:
         continue
 
-    print("===== Test Game %i =====================" % (i+1))
-    for j in range(len(steps)):
-        output = stepToString(steps[j])
-        print(j if j >= 10 else "%i " % j, output)
-    print("Total Reward: %i\n" % total_rewards[i])
+    if SHOW_TESTS:
+        print("===== Test Game %i =====================" % (i+1))
+        for j in range(len(steps)):
+            output = stepToString(steps[j])
+            print(j if j >= 10 else "%i " % j, output)
+        print("Total Reward: %i\n" % total_rewards[i])
 
 print("\n Average Number of Steps taken %.2f" % np.mean(numSteps))
 print("\nMedian Reward: %.2f; Mean Reward: %.2f" % (np.median(total_rewards), np.mean(total_rewards)))
