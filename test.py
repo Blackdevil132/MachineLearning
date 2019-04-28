@@ -19,13 +19,13 @@ while not done:
     s, r, done, p = env.step(int(input("What do?")))
 env.render()"""
 """
-env = Game2Enemies(map_name="8x8")
+env = Game2Enemies(map_name="8x8")"""
 
 #transitions = {bytes((0, 7, 56)): {0: [(0.33, bytes((1, 7, 56)), 100, False), (0.33, bytes((8, 7, 56)), -100, False), (0.33, bytes((0, 7, 48)), 0, True)], 1: [(1.0, bytes((0, 7, 56)), 100, True)]}}
 with open("transitions.pkl", 'rb') as f:
     print("Loading Transition Matrix from %s..." % "transitions.pkl", end='')
     transitions = pickle.load(f)
-    print("done")"""
+    print("done")
 
 
 def save(transitions):
@@ -137,8 +137,13 @@ def load_o():
 t1 = timeit(load_o, [])
 
 print("OK")
-"""
+limit = 5
+counter = 0
 for s in t1.keys():
+    if counter > limit:
+        break
     for a in t1[s]:
         print(s, a, t1[s][a])
-"""
+        print(s, a, transitions[s][a])
+        print()
+    counter +=1
