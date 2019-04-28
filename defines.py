@@ -33,7 +33,7 @@ COLOR_BG = (230, 230, 230)
 PATH = "qtables/"
 
 MAP = bytes("FFFFFFFFFFFFFFFFFFFHFFFFFFFFFHFFFFFHFFFFFHHFFFHFFHFFHFHFFFFHFFFG", "utf8")
-MAX_STEPS = 40  # Max steps per episode
+MAX_STEPS = 35  # Max steps per episode
 
 NUM_ACTIONS = 6
 NUM_ROWS = 8
