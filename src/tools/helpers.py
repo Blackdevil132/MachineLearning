@@ -80,10 +80,10 @@ def bytes2long(bs, startIndex=0, length=8):
     return longValue
 
 
-def long2bytes(value, length=8):
-    destinationArray = [0 for i in range(length)]
-    for i in range(length - 1, - 1, -1):
+def long2bytes(value, startIndex=0, length=8):
+    destinationArray = [0 for i in range(length+startIndex)]
+    for i in range((startIndex + length) - 1, startIndex - 1, -1):
         destinationArray[i] = value & 0x000000ff
         value = value >> 8
 
-    return bytes(destinationArray)
+    return bytearray(destinationArray)
