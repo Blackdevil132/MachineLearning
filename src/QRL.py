@@ -9,7 +9,7 @@ from src.Game2Enemies import Game2Enemies
 from src.Qtable3 import Qtable3
 
 MAP = bytes("FFFFFFFFFFFFFFFFFFFHFFFFFFFFFHFFFFFHFFFFFHHFFFHFFHFFHFHFFFFHFFFG", "utf8")
-max_steps = 50  # Max steps per episode
+max_steps = 40  # Max steps per episode
 
 
 class QRL:

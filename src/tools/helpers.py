@@ -128,9 +128,9 @@ def saveTransitions(transitions):
 
 
 def loadTransitions():
-    print("Loading Index...", end='')
     transitions = {}
     with open("transitions/index.bin", 'rb') as index:
+        print("Loading Index...", end='')
         index_cached = index.read()
         index_offset = 0
     print("done")

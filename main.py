@@ -43,13 +43,15 @@ qrl.environment.render("human")
 print("\n")
 
 numTests = 100
+numSteps = []
 total_rewards = np.zeros(numTests)
 for i in range(numTests):
     steps = qrl.test(render=False)
+    numSteps.append(len(steps))
     for step in steps:
         total_rewards[i] += step[3]
 
-    if total_rewards[i] == 400:
+    if total_rewards[i] == 200:
         continue
 
     print("===== Test Game %i =====================" % (i+1))
@@ -58,6 +60,7 @@ for i in range(numTests):
         print(j if j >= 10 else "%i " % j, output)
     print("Total Reward: %i\n" % total_rewards[i])
 
+print("\n Average Number of Steps taken %.2f" % np.mean(numSteps))
 print("\nMedian Reward: %.2f; Mean Reward: %.2f" % (np.median(total_rewards), np.mean(total_rewards)))
 print("Minimum Reward: %i; Maximum Reward: %i" % (total_rewards.min(), total_rewards.max()))
 #print("Exploitation-Exploration Ratio: %i:%i\n" % (qrl.expexpratio[0], qrl.expexpratio[1]))
