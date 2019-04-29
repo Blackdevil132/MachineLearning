@@ -14,7 +14,7 @@ STATE_DEAD = 64
 NUM_STATES = NUM_ROWS * NUM_COLS
 
 # Learning parameters
-INIT_STATE = bytes((0, NUM_COLS-1, (NUM_ROWS-1)*NUM_COLS))
+INIT_STATE = bytes((0, NUM_COLS-1, (NUM_ROWS-1)*NUM_COLS, 1))
 MAX_STEPS = 40  # Max steps per episode
 MAX_EPSILON = 1.0
 MIN_EPSILON = 0.05
@@ -27,8 +27,9 @@ G:  Goal, ends episode
 S:  Starting Tile
 K:  Killreward
 P:  Penalty, applied for stepping out of Bounds or slaying without reason
+C:  Sidegoal, can only be collected once
 """
-REWARDS = {b'F': 0, b'H': -100, b'G': 100, b'S': 0, b'K': 50, b'P': -100}
+REWARDS = {b'F': 0, b'H': -100, b'G': 100, b'S': 0, b'K': 50, b'P': -100, b'C': 10}
 
 # customisation of output of main.py
 SHOW_QTABLE = False         # print out qtable after learning
@@ -50,7 +51,7 @@ SLAY = 5
 IntToAction = {0: "STAYING", 1: "LEFT", 2: "DOWN", 3: "RIGHT", 4: "UP", 5: "SLAYING"}
 
 # Map layout
-MAP = bytes("FFFFFFFFFFFFFFFFFFFHFFFFFFFFFHFFFFFHFFFFFHHFFFHFFHFFHFHFFFFHFFFG", "utf8")
+MAP = bytes("FFFFFFFFFFFFFFCFFFFHFFFFFFFFFHFFFFFHFFFFFHHFFFHFFHFFHFHFFFFHFFFG", "utf8")
 
 MAPS = {
     "4x4": [
@@ -61,7 +62,7 @@ MAPS = {
     ],
     "8x8": [
         "SFFFFFFF",
-        "FFFFFFFF",
+        "FFFFFFCF",
         "FFFHFFFF",
         "FFFFFHFF",
         "FFFHFFFF",

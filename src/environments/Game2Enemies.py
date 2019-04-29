@@ -22,7 +22,7 @@ class Game2Enemies(discrete.DiscreteEnv):
 
         nA = NUM_ACTIONS
         nA_e = NUM_ACTIONS
-        nS = (self.nrow * self.ncol) * ((self.nrow * self.ncol) + 1) * ((self.nrow * self.ncol) + 1)
+        nS = (self.nrow * self.ncol) * ((self.nrow * self.ncol) + 1) * ((self.nrow * self.ncol) + 1) * 2
 
         isd = np.array(desc == b'S').astype('float64').ravel()
         isd /= isd.sum()
@@ -31,7 +31,7 @@ class Game2Enemies(discrete.DiscreteEnv):
             P = loadTransitions()
         except FileNotFoundError:
             print("Computing Transition Matrix for Game...")
-            P = {bytes((s, e1, e2)): {a: [] for a in range(nA)} for s in range(self.ncol*self.nrow) for e1 in range(self.ncol*self.nrow + 1) for e2 in range(self.ncol*self.nrow + 1)}
+            P = {bytes((s, e1, e2, c)): {a: [] for a in range(nA)} for s in range(self.ncol*self.nrow) for e1 in range(self.ncol*self.nrow + 1) for e2 in range(self.ncol*self.nrow + 1) for c in range(2)}
 
             def to_s(row, col):
                 return row * ncol + col
@@ -65,8 +65,8 @@ class Game2Enemies(discrete.DiscreteEnv):
                             if possible_moves[a]:
                                 pattern[to_s(row, col)][a] = 1.0 / possible_moves.sum()
 
-                pattern[64] = np.zeros(nA_e)
-                pattern[64][0] = 1.0
+                pattern[STATE_DEAD] = np.zeros(nA_e)
+                pattern[STATE_DEAD][0] = 1.0
                 return pattern
 
             enemy_pattern = getEnemyPattern(nrow, ncol)
@@ -87,72 +87,79 @@ class Game2Enemies(discrete.DiscreteEnv):
                     for s_e in range(nrow*ncol + 1):
                         row_e, col_e = s_e // ncol, s_e % ncol
                         for s_e2 in range(nrow*ncol + 1):
-                            row_e2, col_e2 = s_e2 // ncol, s_e2 % ncol
-                            s = bytes((to_s(row, col), s_e, s_e2))
+                            for c in range(2):
+                                row_e2, col_e2 = s_e2 // ncol, s_e2 % ncol
+                                s = bytes((to_s(row, col), s_e, s_e2, c))
 
-                            for a in range(nA):
-                                li = P[s][a]
-                                letter = desc[row, col]
-                                if letter in b'GH':
-                                    # Finite State
-                                    li.append((1.0, s, self.reward_range[letter], True))
-                                else:
-                                    # non finite state
-                                    newrow, newcol = inc(row, col, a)
-                                    new_s = to_s(newrow, newcol)
-                                    if new_s in [s[1], s[2]]:
-                                        # Agent moved into Enemy; not allowed
-                                        rew = self.reward_range[b'P']
-                                        li.append((1.0, bytes((new_s, s[1], s[2])), rew, True))
+                                for a in range(nA):
+                                    li = P[s][a]
+                                    letter = desc[row, col]
+                                    if letter in b'GH':
+                                        # Finite State
+                                        li.append((1.0, s, self.reward_range[letter], True))
                                     else:
-                                        # allowed movement
-                                        for move_e in getEnemyMoves(s[1]):
-                                            for move_e2 in getEnemyMoves(s[2]):
-                                                if move_e[0] * move_e2[0] != 0:
-                                                    new_s_e, new_s_e2 = move_e[1], move_e2[1]
+                                        # non finite state
+                                        newrow, newcol = inc(row, col, a)
+                                        new_s = to_s(newrow, newcol)
+                                        if new_s in [s[1], s[2]]:
+                                            # Agent moved into Enemy; not allowed
+                                            rew = self.reward_range[b'P']
+                                            li.append((1.0, bytes((new_s, s[1], s[2], c)), rew, True))
+                                        else:
+                                            # allowed movement
+                                            for move_e in getEnemyMoves(s[1]):
+                                                for move_e2 in getEnemyMoves(s[2]):
+                                                    if move_e[0] * move_e2[0] != 0:
+                                                        new_s_e, new_s_e2 = move_e[1], move_e2[1]
+                                                        new_c = c
 
-                                                    if a == SLAY:
-                                                        # slaying
-                                                        adjacent = [to_s(*inc(row, col, d)) for d in range(1, 5)]
-                                                        done = False
-                                                        rew = self.reward_range[b'P']
-                                                        if s[1] in adjacent and s[0] != s[1]:
-                                                            if move_e[2] == SLAY:
-                                                                rew = 0
-                                                                new_s_e = s_e
-                                                            else:
-                                                                rew = self.reward_range[b'K']
-                                                                new_s_e = 64
-                                                        if s[2] in adjacent and s[0] != s[2]:
-                                                            # if slaying and enemy 2 is adjacent
-                                                            if move_e2[2] == SLAY:
-                                                                # saved, if enemy is slaying aswell
-                                                                rew = 0
-                                                                new_s_e2 = s_e2
-                                                            else:
-                                                                # dead if not
-                                                                rew = self.reward_range[b'K']
-                                                                new_s_e2 = 64
-                                                    else:
-                                                        newletter = desc[newrow, newcol]
-                                                        # moving or staying
-                                                        if move_e[2] == SLAY and new_s in [to_s(*inc(row_e, col_e, d)) for d in range(1, 5)]:
-                                                            # moving next to enemy 1 who is attacking, dead
-                                                            done = True
-                                                        elif move_e2[2] == SLAY and new_s in [to_s(*inc(row_e2, col_e2, d)) for d in range(1, 5)]:
-                                                            # moving next to enemy 2 who is attacking, dead
-                                                            done = True
-                                                        else:
-                                                            done = bytes(newletter) in b'GH' or new_s in [new_s_e, new_s_e2]
-
-                                                        # penalize moving out of bounds
-                                                        if a != STAY and new_s == s[0]:
+                                                        if a == SLAY:
+                                                            # slaying
+                                                            adjacent = [to_s(*inc(row, col, d)) for d in range(1, 5)]
+                                                            done = False
                                                             rew = self.reward_range[b'P']
+                                                            if s[1] in adjacent and s[0] != s[1]:
+                                                                if move_e[2] == SLAY:
+                                                                    rew = 0
+                                                                    new_s_e = s_e
+                                                                else:
+                                                                    rew = self.reward_range[b'K']
+                                                                    new_s_e = 64
+                                                            if s[2] in adjacent and s[0] != s[2]:
+                                                                # if slaying and enemy 2 is adjacent
+                                                                if move_e2[2] == SLAY:
+                                                                    # saved, if enemy is slaying aswell
+                                                                    rew = 0
+                                                                    new_s_e2 = s_e2
+                                                                else:
+                                                                    # dead if not
+                                                                    rew = self.reward_range[b'K']
+                                                                    new_s_e2 = 64
                                                         else:
-                                                            rew = self.reward_range[newletter]
+                                                            newletter = desc[newrow, newcol]
 
-                                                    newstate = bytes((new_s, new_s_e, new_s_e2))
-                                                    li.append((move_e[0] * move_e2[0], newstate, rew, done))
+                                                            # moving or staying
+                                                            if move_e[2] == SLAY and new_s in [to_s(*inc(row_e, col_e, d)) for d in range(1, 5)]:
+                                                                # moving next to enemy 1 who is attacking, dead
+                                                                done = True
+                                                            elif move_e2[2] == SLAY and new_s in [to_s(*inc(row_e2, col_e2, d)) for d in range(1, 5)]:
+                                                                # moving next to enemy 2 who is attacking, dead
+                                                                done = True
+                                                            else:
+                                                                done = bytes(newletter) in b'GH' or new_s in [new_s_e, new_s_e2]
+
+                                                            if a != STAY and new_s == s[0]:
+                                                                # penalize moving out of bounds
+                                                                rew = self.reward_range[b'P']
+                                                            elif a == STAY and newletter == b'C' and c:
+                                                                # standing on coinstash
+                                                                rew = self.reward_range[b'C']
+                                                                new_c = 0
+                                                            else:
+                                                                rew = self.reward_range[newletter]
+
+                                                        newstate = bytes((new_s, new_s_e, new_s_e2, new_c))
+                                                        li.append((move_e[0] * move_e2[0], newstate, rew, done))
 
             saveTransitions(P)
 
