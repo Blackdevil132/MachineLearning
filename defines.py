@@ -1,9 +1,52 @@
+# color shortcuts
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+COLOR_BG = (230, 230, 230)
+
+# subdirectory for qtables
+PATH = "qtables/"
+
+# Environment defines
+NUM_ACTIONS = 6
+NUM_ROWS = 8
+NUM_COLS = 8
+STATE_DEAD = 64
+NUM_STATES = NUM_ROWS * NUM_COLS
+
+# Learning parameters
+INIT_STATE = bytes((0, NUM_COLS-1, (NUM_ROWS-1)*NUM_COLS))
+MAX_STEPS = 40  # Max steps per episode
+MAX_EPSILON = 1.0
+MIN_EPSILON = 0.05
+MAP_NAME = "8x8"
+
+"""
+F:  Normal Tile
+H:  Hole, ends episode
+G:  Goal, ends episode
+S:  Starting Tile
+K:  Killreward
+P:  Penalty, applied for stepping out of Bounds or slaying without reason
+"""
+REWARDS = {b'F': 0, b'H': -100, b'G': 100, b'S': 0, b'K': 50, b'P': -100}
+
+# customisation of output of main.py
+NUM_TESTS = 100
+SHOW_QTABLE = False
+SHOW_TESTS = True
+
+# Action assignment to numbers
+STAY = 0
 LEFT = 1
 DOWN = 2
 RIGHT = 3
 UP = 4
-STAY = 0
 SLAY = 5
+
+IntToAction = {0: "STAYING", 1: "LEFT", 2: "DOWN", 3: "RIGHT", 4: "UP", 5: "SLAYING"}
+
+# Map layout
+MAP = bytes("FFFFFFFFFFFFFFFFFFFHFFFFFFFFFHFFFFFHFFFFFHHFFFHFFHFFHFHFFFFHFFFG", "utf8")
 
 MAPS = {
     "4x4": [
@@ -23,25 +66,3 @@ MAPS = {
         "FFFHFFFG"
     ],
 }
-
-IntToAction = ["STAYING", "LEFT", "DOWN", "RIGHT", "UP", "SLAYING"]
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-COLOR_BG = (230, 230, 230)
-
-PATH = "qtables/"
-
-MAP = bytes("FFFFFFFFFFFFFFFFFFFHFFFFFFFFFHFFFFFHFFFFFHHFFFHFFHFFHFHFFFFHFFFG", "utf8")
-MAX_STEPS = 35  # Max steps per episode
-
-NUM_ACTIONS = 6
-NUM_ROWS = 8
-NUM_COLS = 8
-
-NUM_STATES = NUM_ROWS * NUM_COLS
-
-NUM_TESTS = 100
-MAP_NAME = "8x8"
-SHOW_QTABLE = False
-SHOW_TESTS = False

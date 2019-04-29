@@ -1,5 +1,7 @@
-import sys, pickle
+import sys
+
 import numpy as np
+
 from six import StringIO
 from contextlib import closing
 from gym import utils
@@ -16,10 +18,10 @@ class Game2Enemies(discrete.DiscreteEnv):
             desc = MAPS[map_name]
         self.desc = desc = np.asarray(desc, dtype='c')
         self.nrow, self.ncol = nrow, ncol = desc.shape
-        self.reward_range = {b'F': 0, b'H': -100, b'G': 100, b'S': 0, b'K': 50, b'P': -100}
+        self.reward_range = REWARDS
 
-        nA = 6
-        nA_e = 6
+        nA = NUM_ACTIONS
+        nA_e = NUM_ACTIONS
         nS = (self.nrow * self.ncol) * ((self.nrow * self.ncol) + 1) * ((self.nrow * self.ncol) + 1)
 
         isd = np.array(desc == b'S').astype('float64').ravel()
@@ -184,6 +186,6 @@ class Game2Enemies(discrete.DiscreteEnv):
                 return outfile.getvalue()
 
     def reset(self):
-        self.s = bytes((0, self.ncol-1, (self.nrow-1)*self.ncol))
+        self.s = INIT_STATE
         self.lastaction = None
         return self.s

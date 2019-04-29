@@ -47,23 +47,23 @@ def stepToString(step):
     if step[1] == STAY:
         output.append("STAYING at %i." % step[2][0])
     elif step[1] == SLAY:
-        if step[2][1] == 64:
+        if step[2][1] == STATE_DEAD:
             output.append("SLAYING Enemy at %i." % step[0][1])
-        elif step[2][2] == 64:
+        elif step[2][2] == STATE_DEAD:
             output.append("SLAYING Enemy at %i." % step[0][2])
         else:
             output.append("SLAYED Nothing.")
     else:
         output.append("Moving from %i %s to %i." % (step[0][0], IntToAction[step[1]], step[2][0]))
 
-    if step[2][1] == 64:
+    if step[2][1] == STATE_DEAD:
         output.append("Enemy 1 is DEAD.")
     elif step[0][1] == step[2][1]:
         output.append("Enemy 1 is STAYING at %i." % step[2][1])
     else:
         output.append("Enemy 1 moving from %i to %i." % (step[0][1], step[2][1]))
 
-    if step[2][2] == 64:
+    if step[2][2] == STATE_DEAD:
         output.append("Enemy 2 is DEAD.")
     elif step[0][2] == step[2][2]:
         output.append("Enemy 2 is STAYING at %i." % step[2][2])
@@ -113,7 +113,7 @@ def saveTransitions(transitions):
                 files_cached[len_t] += row_bytes
                 offset[len_t] += BYTES_FIELD
 
-    print("Writing archives to disk...", end='')
+    print("done\nWriting archives to disk...", end='')
     for i in range(NUM_FILES):
         if files_cached[i] != b'':
             with open("transitions/%i" % i, 'ab') as file:
@@ -124,7 +124,7 @@ def saveTransitions(transitions):
         print("Writing index to disk...", end='')
         index.write(index_cached)
 
-    print("complete")
+    print("done")
 
 
 def loadTransitions():

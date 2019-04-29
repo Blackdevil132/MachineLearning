@@ -10,9 +10,9 @@ from defines import *
 if len(sys.argv) < 5:
     # initialize standard parameters
     total_episodes = 500000
-    learning_rate = 0.2
-    discount_rate = 0.9
-    decay_rate = 0.00012
+    learning_rate = 0.25
+    discount_rate = 0.95
+    decay_rate = 0.0004
 else:
     # initialize with given parameter-values
     total_episodes = int(sys.argv[1])

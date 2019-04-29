@@ -1,4 +1,6 @@
-import time, math, sys
+import math
+import sys
+import time
 
 
 def statusBar(iteration, total_episodes):

@@ -2,6 +2,11 @@ import pickle
 
 
 class Qtable:
+    """
+    base class for qtables
+    contains save/store functions
+    get/update have to be overridden if qtable has multi dimensional format
+    """
     def __init__(self):
         self.table = {}
 
