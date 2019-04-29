@@ -2,9 +2,9 @@ import sys
 
 import numpy as np
 
-from src import QRL
+from src.qrl import QRL
 from src.tools.tools import timeit
-from src.Game2Enemies import Game2Enemies
+from src.environments.Game2Enemies import Game2Enemies
 from src.tools.helpers import stepToString
 from defines import *
 

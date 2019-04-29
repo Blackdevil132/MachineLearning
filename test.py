@@ -1,7 +1,7 @@
 import sys
 
-from src.QRL import QRL
-from src.Game2Enemies import Game2Enemies
+from src.qrl.QRL import QRL
+from src.environments.Game2Enemies import Game2Enemies
 from defines import *
 
 if len(sys.argv) < 2:

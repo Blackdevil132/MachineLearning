@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.Qtable import Qtable
+from src.qrl.Qtable import Qtable
 
 
 # Qtable for 3-dim storing

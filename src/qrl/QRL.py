@@ -1,13 +1,12 @@
 import random
 import datetime
 import time
-import sys
 
 import numpy as np
 
 from defines import *
-from src.Game2Enemies import Game2Enemies
-from src.Qtable3 import Qtable3
+from src.environments.Game2Enemies import Game2Enemies
+from src.qrl.Qtable3 import Qtable3
 
 
 class QRL:
