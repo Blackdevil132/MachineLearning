@@ -200,8 +200,10 @@ def timeit(func, args, loops=None):
     for i in range(loops):
         func(*args)
     end = time.perf_counter()
-
-    print("%i Loops, Average Execution Time for %s: %.3f ms" % (loops, func.__name__, (end-start)/loops))
+    if loops > 1:
+        print("%i Loops, Average Execution Time for %s: %.3f s" % (loops, func.__name__, (end-start)/loops))
+    else:
+        print("Execution Time for %s: %.3f ss" % (func.__name__, (end-start)/loops))
     return (end-start)/loops
 
 

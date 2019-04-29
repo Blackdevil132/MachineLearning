@@ -31,9 +31,13 @@ P:  Penalty, applied for stepping out of Bounds or slaying without reason
 REWARDS = {b'F': 0, b'H': -100, b'G': 100, b'S': 0, b'K': 50, b'P': -100}
 
 # customisation of output of main.py
-NUM_TESTS = 100
-SHOW_QTABLE = False
-SHOW_TESTS = True
+SHOW_QTABLE = False         # print out qtable after learning
+SHOW_MAP = False            # print maplayout after learning
+
+NUM_TESTS = 100             # number of test to determine statistics after learning
+SHOW_TESTS = True           # Show paths of test games
+SHOW_ONLY_SUBPAR = True     # only print path of tests with results below THRESHOLD
+THRESHOLD = 200             # Threshold for subpar tests
 
 # Action assignment to numbers
 STAY = 0

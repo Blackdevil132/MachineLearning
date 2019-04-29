@@ -25,18 +25,19 @@ class QRL:
         self.exportPath = None
 
     def exportToFile(self):
-        print("Storing Q-Table in %s.pkl..." % self.exportPath, end='')
         if self.exportPath is None:
             date = datetime.datetime.today().strftime("%y%m%d_%H")
             path = PATH + date
             self.exportPath = path
+
+        print("Storing Q-Table in %s.pkl..." % self.exportPath, end='')
         self.qtable.toFile(self.exportPath)
         print("done")
 
     def loadFromFile(self, path=None):
-        print("Loading Q-Table from %s.pkl..." % path, end='')
         if path is None:
             path = self.exportPath
+        print("Loading Q-Table from %s.pkl..." % path, end='')
         self.qtable.fromFile(path)
         print("done")
 

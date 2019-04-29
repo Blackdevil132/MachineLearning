@@ -1,7 +1,9 @@
-from src import QRL
-import numpy as np
-from src.tools.tools import timeit
 import sys
+
+import numpy as np
+
+from src import QRL
+from src.tools.tools import timeit
 from src.Game2Enemies import Game2Enemies
 from src.tools.helpers import stepToString
 from defines import *
@@ -11,8 +13,8 @@ if len(sys.argv) < 5:
     # initialize standard parameters
     total_episodes = 500000
     learning_rate = 0.25
-    discount_rate = 0.95
-    decay_rate = 0.0004
+    discount_rate = 0.85
+    decay_rate = 0.0002
 else:
     # initialize with given parameter-values
     total_episodes = int(sys.argv[1])
@@ -34,10 +36,11 @@ if SHOW_QTABLE:
     qrl.loadFromFile()
     qrl.qtable.show()
 
-print("====== MAP Layout ==================\n")
-qrl.environment.reset()
-qrl.environment.render("human")
-print("\n")
+if SHOW_MAP:
+    print("====== MAP Layout ==================\n")
+    qrl.environment.reset()
+    qrl.environment.render()
+    print("\n")
 
 numSteps = []
 total_rewards = np.zeros(NUM_TESTS)
@@ -47,7 +50,7 @@ for i in range(NUM_TESTS):
     for step in steps:
         total_rewards[i] += step[3]
 
-    if total_rewards[i] == 200:
+    if SHOW_ONLY_SUBPAR and total_rewards[i] >= THRESHOLD:
         continue
 
     if SHOW_TESTS:
@@ -60,11 +63,3 @@ for i in range(NUM_TESTS):
 print("\n Average Number of Steps taken %.2f" % np.mean(numSteps))
 print("\nMedian Reward: %.2f; Mean Reward: %.2f" % (np.median(total_rewards), np.mean(total_rewards)))
 print("Minimum Reward: %i; Maximum Reward: %i" % (total_rewards.min(), total_rewards.max()))
-#print("Exploitation-Exploration Ratio: %i:%i\n" % (qrl.expexpratio[0], qrl.expexpratio[1]))
-
-"""
-print("===== Statistics Table ==============================")
-for i in range(64):
-    for j in range(20):
-        print(i, j, qrl.statistics[bytes((i, j))])
-"""

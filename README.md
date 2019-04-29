@@ -26,6 +26,11 @@ test.py qtable
 ##### Parameters
 qtable:         Path to pickled qtable. Omit .pkl file ending.  
 
+
+## defines    
+
+customize output, learning and environment parameters.  
+
 # Dependencies  
 gym 0.12.1  
 numpy 1.16.2  
