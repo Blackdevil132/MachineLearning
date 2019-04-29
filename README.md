@@ -1,6 +1,6 @@
 # MachineLearning  
-Number of States: 270.400
-Number of Actions: 6
+Number of States: 270.400  
+Number of Actions: 6  
 
 needs approx. 200MB additional disk space for qtable and transition matrix.  
 
