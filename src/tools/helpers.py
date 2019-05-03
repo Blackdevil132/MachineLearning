@@ -135,7 +135,7 @@ def loadTransitions():
         print("\n\tLoading Index...", end='')
         index_cached = index.read()
         index_offset = 0
-    print("done\n")
+    print("done")
 
     print("\tLoading archive files...", end='')
     files_cached = [b'' for i in range(NUM_FILES)]
@@ -169,5 +169,5 @@ def loadTransitions():
 
                     index_offset += BYTES_INDEX
 
-    print("done")
+    print("done\n")
     return transitions
