@@ -10,8 +10,11 @@ starts learning process with specified parameters
 
 main.py numEpisodes learningRate discountRate decayRate  
 
+if you specify no parameters, the parameters from defines.py will be used  
 
-##### Parameters
+
+
+##### Parameters  
 numEpisodes:    Number of Episodes to learn from.  
 learningRate:   (0, 1] The higher the faster the agent learns.  
 discountRate:   (0, 1] The higher the more longterm focused the agent behaves.   
