@@ -11,10 +11,10 @@ from defines import *
 
 if len(sys.argv) < 5:
     # initialize standard parameters
-    total_episodes = 500000
-    learning_rate = 0.25
-    discount_rate = 0.85
-    decay_rate = 0.0002
+    total_episodes = NUM_EPISODES
+    learning_rate = LEARNING_RATE
+    discount_rate = DISCOUNT_RATE
+    decay_rate = DECAY_RATE
 else:
     # initialize with given parameter-values
     total_episodes = int(sys.argv[1])
@@ -24,7 +24,7 @@ else:
 
 
 qrl = QRL.QRL(env=Game2Enemies(map_name=MAP_NAME), learning_rate=learning_rate, discount_rate=discount_rate, decay_rate=decay_rate)
-exec_time = timeit(qrl.run, [total_episodes, "qtables/190427_18"], 1)
+exec_time = timeit(qrl.run, [total_episodes], 1)
 
 # store exec_time in file
 with open("performance.csv", 'a') as file:

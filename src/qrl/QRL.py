@@ -7,6 +7,7 @@ import numpy as np
 from defines import *
 from src.environments.Game2Enemies import Game2Enemies
 from src.qrl.Qtable3 import Qtable3
+from src.tools.Memory import Memory
 
 
 class QRL:
@@ -68,6 +69,8 @@ class QRL:
             except FileNotFoundError:
                 pass
 
+        replayBuffer = Memory()
+
         print("Learning with Parameters: %i, %.2f, %.2f, %.4f..." % (total_episodes, self.learning_rate, self.discount_rate, self.decay_rate))
         print("Progress: [", end='')
         # execute Game and learn
@@ -89,11 +92,16 @@ class QRL:
 
                 state = new_state
 
-            # iterate through all steps taken by the agent from last to first and learn
-            self.learnFromSteps(steps)
+            # add steps to Replay buffer
+            replayBuffer.add_multiple(steps)
 
-            # Reduce epsilon
-            self.updateEpsilon(episode)
+            if episode > PRETRAIN_SIZE:
+                # iterate through batch of steps and learn
+                batch = replayBuffer.sample()
+                self.learnFromSteps(batch)
+
+                # Reduce epsilon
+                self.updateEpsilon(episode)
 
         print("]")
         self.exportToFile()
