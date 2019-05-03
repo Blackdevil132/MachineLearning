@@ -96,7 +96,8 @@ NUM_FILES = NUM_ACTIONS * NUM_ACTIONS + 1
 
 
 def saveTransitions(transitions):
-    print("Constructing archive files...")
+    print("Writing transition matrix to disk...")
+    print("\tConstructing archive files...")
     offset = [0 for i in range(NUM_FILES)]
     os.makedirs("transitions", exist_ok=True)
     index_cached = bytearray()
@@ -113,7 +114,7 @@ def saveTransitions(transitions):
                 files_cached[len_t] += row_bytes
                 offset[len_t] += BYTES_FIELD
 
-    print("done\nWriting archives to disk...", end='')
+    print("done\n\tWriting archives to disk...", end='')
     for i in range(NUM_FILES):
         if files_cached[i] != b'':
             with open("transitions/%i" % i, 'ab') as file:
@@ -121,21 +122,22 @@ def saveTransitions(transitions):
     print("done")
 
     with open("transitions/index.bin", 'wb') as index:
-        print("Writing index to disk...", end='')
+        print("\tWriting index to disk...", end='')
         index.write(index_cached)
 
     print("done")
 
 
 def loadTransitions():
+    print("Loading Transition matrix for environment...")
     transitions = {}
     with open("transitions/index.bin", 'rb') as index:
-        print("Loading Index...", end='')
+        print("\tLoading Index...", end='')
         index_cached = index.read()
         index_offset = 0
     print("done")
 
-    print("Loading archive files...", end='')
+    print("\tLoading archive files...", end='')
     files_cached = [b'' for i in range(NUM_FILES)]
     for file_id in range(NUM_FILES):
         try:
@@ -145,7 +147,7 @@ def loadTransitions():
             pass
     print("done")
 
-    print("Reconstructing Matrix...", end='')
+    print("\tReconstructing Matrix...", end='')
     for s1 in range(NUM_STATES):
         for s2 in range(NUM_STATES+1):
             for s3 in range(NUM_STATES+1):
