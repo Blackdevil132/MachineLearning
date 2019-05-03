@@ -15,9 +15,9 @@ NUM_STATES = NUM_ROWS * NUM_COLS
 
 # Learning hyperparameters
 NUM_EPISODES = 500000
-LEARNING_RATE = 0.5
+LEARNING_RATE = 0.25
 DISCOUNT_RATE = 0.9
-DECAY_RATE = 0.0002
+DECAY_RATE = 0.0004
 
 # Learning parameters
 INIT_STATE = bytes((0, NUM_COLS-1, (NUM_ROWS-1)*NUM_COLS))
@@ -26,7 +26,7 @@ MAX_EPSILON = 1.0
 MIN_EPSILON = 0.05
 MAP_NAME = "8x8"
 
-# Memory parameters
+# Memory parameters NOT USED
 MEMORY_SIZE = 1000
 BATCH_SIZE = 64
 PRETRAIN_SIZE = 4
@@ -39,7 +39,7 @@ S:  Starting Tile
 K:  Killreward
 P:  Penalty, applied for stepping out of Bounds or slaying without reason
 """
-REWARDS = {b'F': 0, b'H': -100, b'G': 100, b'S': 0, b'K': 50, b'P': -100}
+REWARDS = {b'F': 0, b'H': -100, b'G': 120, b'S': 0, b'K': 80, b'P': -100}
 
 # customisation of output of main.py
 SHOW_QTABLE = False         # print out qtable after learning
