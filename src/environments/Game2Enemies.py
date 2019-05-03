@@ -30,7 +30,7 @@ class Game2Enemies(discrete.DiscreteEnv):
         try:
             P = loadTransitions()
         except FileNotFoundError:
-            print("Computing Transition Matrix for Game...")
+            print("failed\nComputing Transition Matrix for environment...", end='')
             P = {bytes((s, e1, e2)): {a: [] for a in range(nA)} for s in range(self.ncol*self.nrow) for e1 in range(self.ncol*self.nrow + 1) for e2 in range(self.ncol*self.nrow + 1)}
 
             def to_s(row, col):
@@ -154,6 +154,7 @@ class Game2Enemies(discrete.DiscreteEnv):
                                                     newstate = bytes((new_s, new_s_e, new_s_e2))
                                                     li.append((move_e[0] * move_e2[0], newstate, rew, done))
 
+            print("done")
             saveTransitions(P)
 
         super(Game2Enemies, self).__init__(nS, nA, P, isd)
