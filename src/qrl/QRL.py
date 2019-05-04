@@ -66,6 +66,7 @@ class QRL:
             try:
                 self.loadFromFile()
             except FileNotFoundError:
+                print("failed")
                 pass
 
         print("Learning with Parameters: %i, %.2f, %.2f, %.4f..." % (total_episodes, self.learning_rate, self.discount_rate, self.decay_rate))

@@ -15,13 +15,13 @@ NUM_STATES = NUM_ROWS * NUM_COLS
 
 # Learning hyperparameters
 NUM_EPISODES = 500000
-LEARNING_RATE = 0.5
-DISCOUNT_RATE = 0.75
-DECAY_RATE = 0.0001
+LEARNING_RATE = 0.2
+DISCOUNT_RATE = 0.5
+DECAY_RATE = 0.0002
 
 # Learning parameters
 INIT_STATE = bytes((0, NUM_COLS-1, (NUM_ROWS-1)*NUM_COLS))
-MAX_STEPS = 60  # Max steps per episode
+MAX_STEPS = 50  # Max steps per episode
 MAX_EPSILON = 1.0
 MIN_EPSILON = 0.05
 MAP_NAME = "8x8"
@@ -45,7 +45,7 @@ REWARDS = {b'F': 0, b'H': -100, b'G': 120, b'S': 0, b'K': 80, b'P': -100}
 SHOW_QTABLE = False         # print out qtable after learning
 SHOW_MAP = False            # print maplayout after learning
 
-NUM_TESTS = 100             # number of test to determine statistics after learning
+NUM_TESTS = 1000            # number of test to determine statistics after learning
 SHOW_TESTS = True           # Show paths of test games
 SHOW_ONLY_SUBPAR = True     # only print path of tests with results below THRESHOLD
 THRESHOLD = 280             # Threshold for subpar tests

@@ -24,7 +24,7 @@ else:
 
 
 qrl = QRL.QRL(env=Game2Enemies(map_name=MAP_NAME), learning_rate=learning_rate, discount_rate=discount_rate, decay_rate=decay_rate)
-exec_time = timeit(qrl.run, [total_episodes, "qtables/190427_18"], 1)
+exec_time = timeit(qrl.run, [total_episodes, "qtables/190427_20"], 1)
 
 # store exec_time in file
 with open("performance.csv", 'a') as file:
